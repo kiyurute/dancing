@@ -15,6 +15,13 @@ app.use(router);
 io.on(('connect'),(socket)=>{
     console.log('we have new connection');
     
+    socket.on('joinRoom',(userName,roomName)=>{
+        socket.join(roomName);
+        socket.to(roomName).emit('newJoined',null);
+        // socket.emit('newJoined',null);
+        console.log('joinRoom emitted');
+    })
+    
     socket.on('disconnect',()=>{
         console.log('user left');
     })
