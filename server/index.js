@@ -10,6 +10,16 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 
+const mysql = require('mysql');
+
+const connection = mysql.createConnection({
+    host:'localhost',
+    user:'root',
+    password:'',
+    database:'project'
+});
+
+
 app.use(router);
 
 io.on(('connect'),(socket)=>{
