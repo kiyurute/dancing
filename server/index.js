@@ -19,21 +19,129 @@ const connection = mysql.createConnection({
     database:'project'
 });
 
+connection.connect(function(err) {
+  if (err) throw err;
+  console.log("You are connected!");
+});
+
 
 app.use(router);
+
+function createTable(tableName,userName,builder){
+  
+    return new Promise((resolve, reject) => {
+        connection.query(
+                'CREATE TABLE ??(id INT AUTO_INCREMENT, userName TEXT, builder BOOLEAN, PRIMARY KEY(id))',
+                [tableName],
+                (error,results)=>{
+                    resolve(tableName,userName,builder);
+                    console.log(results);
+                });
+    });
+    
+} 
+
+function registerMember(tableName,userName,builder){
+    if(builder === 'true'){
+        builder = 1;
+    }else{
+        builder = 0;
+    }
+    return new Promise((resolve,reject) => {
+        connection.query(
+            'INSERT INTO ?? VALUE (0,?,?)',
+            [tableName, userName, builder],
+            (error,results)=>{
+                console.log(error);
+                resolve(tableName);
+            })
+    })
+}
+
+function removeMember(userName,tableName){
+    return new Promise((resolve,reject) => {
+        connection.query(
+        'DELETE FROM ?? WHERE userName=?',
+        [tableName,userName],
+        (error,results) => {
+            console.log(error);
+            resolve(tableName);
+        });
+    })
+
+}
+
+function checkEmpty(tableName){
+    connection.query(
+        'SELECT * FROM ??',
+        [tableName],
+        (error,results) => {
+            console.log("empty is");
+            console.log(results);
+            if(results === undefined){
+                connection.query(
+                    'DROP TABLE ??',
+                    [tableName],
+                    (error,results) => {}
+                    )
+            }
+        })
+}
+
+// function getMemberList(tableName){
+//     connection.query(
+//         'SELECT * FROM ??',
+//         [tableName],
+//         (error,results) => {
+//             socket.to(roomName).emit('getReady',results);
+//         }
+//         )
+// }
 
 io.on(('connect'),(socket)=>{
     console.log('we have new connection');
     
-    socket.on('joinRoom',(userName,roomName)=>{
+    let userName;
+    let roomName;
+    let tableName;
+    
+    socket.on('ready',(newUserName,newRoomName,builder)=>{
+        userName = newUserName;
+        roomName = newRoomName;
+        tableName = 'member_list_of_'+roomName;
         socket.join(roomName);
-        socket.to(roomName).emit('newJoined',null);
-        // socket.emit('newJoined',null);
-        console.log('joinRoom emitted');
+        
+        if(builder === 'true'){
+            createTable(tableName,userName,builder)
+                .then(registerMember(tableName,userName,builder))
+                .then(connection.query(
+                    'SELECT * FROM ??',
+                    [tableName],
+                    (error,results) => {
+                        socket.to(roomName).emit('getReady',results);
+                        socket.emit('getReady',results);
+                    }
+                ));
+        }else{
+            registerMember(tableName,userName,builder)
+                .then(connection.query(
+                    'SELECT * FROM ??',
+                    [tableName],
+                    (error,results) => {
+                        socket.to(roomName).emit('getReady',results);
+                        socket.emit('getReady',results);
+                    }
+                ));
+        }
+        
+        
+        
     })
     
     socket.on('disconnect',()=>{
-        console.log('user left');
+        removeMember(userName,tableName)
+            .then(checkEmpty(tableName));
+        
     })
 })
 

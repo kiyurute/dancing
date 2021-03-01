@@ -22,7 +22,7 @@ const Entrance=(props)=>{
             <h4>{props.title}</h4>
           </div>
           <div className="row w-100 pt-2">
-            <label>{props.firstLabel}</label>
+            <label>名前</label>
             <div>
               <input
                 className="w-100"
@@ -32,7 +32,7 @@ const Entrance=(props)=>{
             </div>
           </div>
           <div className="row w-100 pt-2">
-            <label>{props.secondLabel}</label>
+            <label>部屋名</label>
             <div>
               <input
                 className="w-100"
