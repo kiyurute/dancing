@@ -88,16 +88,6 @@ function checkEmpty(tableName){
         })
 }
 
-// function getMemberList(tableName){
-//     connection.query(
-//         'SELECT * FROM ??',
-//         [tableName],
-//         (error,results) => {
-//             socket.to(roomName).emit('getReady',results);
-//         }
-//         )
-// }
-
 io.on(('connect'),(socket)=>{
     console.log('we have new connection');
     
@@ -136,6 +126,11 @@ io.on(('connect'),(socket)=>{
         
         
         
+    })
+    
+    socket.on('gameStart',() => {
+        socket.to(roomName).emit('loadGame');
+        socket.emit('loadGame');
     })
     
     socket.on('disconnect',()=>{

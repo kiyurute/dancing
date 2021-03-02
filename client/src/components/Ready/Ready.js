@@ -3,17 +3,28 @@ import queryString from 'query-string';
 import { Link } from 'react-router-dom';
 import io from 'socket.io-client';
 
+import Game from '../Game/Game';
+
 let socket;
 
 const Ready = ({location}) => {
     
-    const [username,setUserName] = useState('');
+    const [userName,setUserName] = useState('');
     const [roomName,setRoomName] = useState('');
-    const [members,setMembers] = useState(['one','two']);
+    const [builder,setBuilder] = useState('');
+    const [members,setMembers] = useState([]);
+    const [gameState,setGameState] = useState('ready');
     const ENDPOINT='https://e0f956dc573149fcb26e0a1aecf31d9e.vfs.cloud9.ap-northeast-1.amazonaws.com:8081';
+    
+    let gameStart;
+    
     
     useEffect(()=>{
         const { userName,roomName,builder } = queryString.parse(location.search);
+        setUserName(userName);
+        setRoomName(roomName);
+        setBuilder(builder);
+        
         console.log(builder);
         
         socket = io(ENDPOINT);
@@ -31,19 +42,38 @@ const Ready = ({location}) => {
             setMembers(temp);
         })
         
+        
+    
+        
     },[])
+    
+    
+    
+    let startButton;
+    
+    if(builder==='true'){
+        
+        startButton = (
+            <Link
+                to={`/game?userName=${userName}&roomName=${roomName}&builder=true`}
+            >
+                <button className="btn btn-primary">開始</button>
+            </Link>
+            )
+    }else{}
+    
     
     return(
         <div>
             <h1>犯人は踊る 待機室</h1>
             {members.map((value)=>{
                 return(
-                    <div>
+                    <div key={value}>
                      <p>{value}</p>
                     </div>
                 );
             })}
-            <button className="btn btn-primary">開始</button>
+            {startButton}
         </div>
         )
     

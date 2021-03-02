@@ -2,7 +2,7 @@ import React, { useState , useEffect } from 'react';
 import queryString from 'query-string';
 import io from 'socket.io-client';
 
-import backside from './cards/backside.svg';
+
 
 let socket;
 
@@ -41,7 +41,6 @@ const Chat = ({location}) => {
     return(
         <div className='container'>
             <h1>Chat</h1>
-            <img src={backside} />
         </div>
         )
 }

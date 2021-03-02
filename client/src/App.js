@@ -5,6 +5,7 @@ import Join from './components/Join/Join';
 import Chat from './components/Chat/Chat';
 import Entrance from './components/Entrance/Entrance';
 import Ready from './components/Ready/Ready';
+import Game from './components/Game/Game'
 
 const App=()=>(
     
@@ -13,6 +14,7 @@ const App=()=>(
         <Route path='/chat' component={Chat} /> 
         <Route path='/entrance' component={Entrance} />
         <Route path='/ready' component={Ready} />
+        <Route path='/game' component={Game} />
        </Router>
     
     )
