@@ -42,6 +42,13 @@ const Ready = ({location}) => {
             setMembers(temp);
         })
         
+        socket.on('loadGame',() => {
+            console.log('loadGame');
+            let url = 'https://e0f956dc573149fcb26e0a1aecf31d9e.vfs.cloud9.ap-northeast-1.amazonaws.com/game?userName='+userName+'&roomName='+roomName+'&builder='+builder
+            // window.location.href ='https://e0f956dc573149fcb26e0a1aecf31d9e.vfs.cloud9.ap-northeast-1.amazonaws.com/game'
+            window.location.href =url
+        })
+        
         
     
         

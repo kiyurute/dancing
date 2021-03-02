@@ -28,9 +28,9 @@ const Game = ({location}) => {
         
         socket = io(ENDPOINT);
         
-        // socket.on('connect',()=>{
-        //     socket.emit('ready',userName,roomName,builder);
-        // })
+        socket.on('connect',()=>{
+            socket.emit('gameStart',userName,roomName,builder);
+        })
         
         // socket.on('getReady',(results) => {
             
@@ -41,9 +41,9 @@ const Game = ({location}) => {
         //     setMembers(temp);
         // })
         
-        // socket.on('loadGame',() => {
-        //     console.log('loadGame');
-        // })
+        socket.on('loadGame',() => {
+            console.log('loadGame');
+        })
     
         
     },[])

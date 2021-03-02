@@ -128,7 +128,8 @@ io.on(('connect'),(socket)=>{
         
     })
     
-    socket.on('gameStart',() => {
+    socket.on('gameStart',(userName,roomName,builder) => {
+        socket.join(roomName);
         socket.to(roomName).emit('loadGame');
         socket.emit('loadGame');
     })
