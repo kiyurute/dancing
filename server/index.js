@@ -128,13 +128,51 @@ io.on(('connect'),(socket)=>{
         
     })
     
-    socket.on('gameStart',(userName,roomName,builder) => {
+    
+    
+    
+    socket.on('gameStart',(newUserName,newRoomName,builder) => {
+        userName = newUserName;
+        roomName = newRoomName;
+        tableName = 'member_list_of_'+roomName;
         socket.join(roomName);
-        socket.to(roomName).emit('loadGame');
-        socket.emit('loadGame');
+        
+        
+        function emitData(queryResults){
+            return new Promise((resolve,reject) => {
+                console.log(queryResults);
+                socket.to(roomName).emit('loadGame',queryResults);
+                socket.emit('loadGame',queryResults);
+                resolve();
+            })
+        }
+        
+        if(builder === 'true'){
+            createTable(tableName,userName,builder)
+                .then(registerMember(tableName,userName,builder))
+                .then(connection.query(
+                    'SELECT * FROM ??',
+                    [tableName],
+                    (error,results) => {
+                        socket.to(roomName).emit('loadGame',results);
+                        socket.emit('loadGame',results);
+                    }))
+        }else{
+            registerMember(tableName,userName,builder)
+                .then(connection.query(
+                    'SELECT * FROM ??',
+                    [tableName],
+                    (error,results) => {
+                        socket.to(roomName).emit('loadGame',results);
+                        socket.emit('loadGame',results);
+                    }))
+        }
+        
     })
     
+    
     socket.on('disconnect',()=>{
+        console.log('user left');
         removeMember(userName,tableName)
             .then(checkEmpty(tableName));
         

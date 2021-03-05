@@ -12,10 +12,11 @@ const Game = ({location}) => {
     const [userName,setUserName] = useState('');
     const [roomName,setRoomName] = useState('');
     const [builder,setBuilder] = useState('');
-    const [members,setMembers] = useState([]);
+    const [members,setMembers] = useState(0);
     const [gameState,setGameState] = useState('ready');
+    const [loadMember,setLoadMember] = useState('off');
+    const [memberData,setMemberData] = useState([]);
     const ENDPOINT='https://e0f956dc573149fcb26e0a1aecf31d9e.vfs.cloud9.ap-northeast-1.amazonaws.com:8081';
-    
     
     
     useEffect(()=>{
@@ -32,21 +33,23 @@ const Game = ({location}) => {
             socket.emit('gameStart',userName,roomName,builder);
         })
         
-        // socket.on('getReady',(results) => {
-            
-        //     let temp = results.map((value) => {
-        //         return value.userName;
-        //     })
-            
-        //     setMembers(temp);
-        // })
         
-        socket.on('loadGame',() => {
-            console.log('loadGame');
+        socket.on('loadGame',(queryResults) => {
+            let arr = [];
+            queryResults.map((val,i) => {
+                arr.push(<Backs name={val.userName} key={i}/>)
+            })
+            setMemberData(arr);
+            console.log('memberData is');
+            console.log(memberData);
         })
-    
+        
+        
+        console.log('in the effect[]');
         
     },[])
+    
+    
     
     return(
         <div className="container-fluid">
@@ -54,7 +57,8 @@ const Game = ({location}) => {
                 <div className="col-md-6">
                     <div className="card">
                         <p>ターン:1/4</p>
-                        <Backs />
+                        {memberData}
+                        {console.log('rendering')}
                     </div>
                 </div>
                 <div className="col-md-6">

@@ -9,18 +9,18 @@ const Backs = (props) => {
     
     return(
           <div className="row">
-                <p>player1</p>
+                <p>{props.name}</p>
                 <div className="col-3">
-                <img src={backside} />
+                <img src={backside} className='w-100' />
                 </div>
                 <div className="col-3">
-                <img src={backside} />
+                <img src={backside} className='w-100' />
                 </div>
                 <div className="col-3">
-                <img src={backside} />
+                <img src={backside} className='w-100' />
                 </div>
                 <div className="col-3">
-                <img src={backside} />
+                <img src={backside} className='w-100' />
                 </div>
             </div>
         )
