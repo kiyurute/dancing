@@ -49,7 +49,11 @@ const Ready = ({location}) => {
             window.location.href =url
         })
         
-        
+        socket.on('nameDuplicate',() => {
+            console.log('name duplicate');
+            alert('name duplicate');
+            
+        })
     
         
     },[])
@@ -62,7 +66,7 @@ const Ready = ({location}) => {
         
         startButton = (
             <Link
-                to={`/game?userName=${userName}&roomName=${roomName}&builder=true`}
+                to={`/game?userName=${userName}&roomName=${roomName}&builder=true&status=game`}
             >
                 <button className="btn btn-primary">開始</button>
             </Link>

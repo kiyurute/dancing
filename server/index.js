@@ -27,8 +27,10 @@ connection.connect(function(err) {
 
 app.use(router);
 
+const SetCards = require('./SetCards');
+
 function createTable(tableName,userName,builder){
-  
+    console.log('in the createTable');
     return new Promise((resolve, reject) => {
         connection.query(
                 'CREATE TABLE ??(id INT AUTO_INCREMENT, userName TEXT, builder BOOLEAN, PRIMARY KEY(id))',
@@ -41,7 +43,32 @@ function createTable(tableName,userName,builder){
     
 } 
 
+function checkMemberDuplicate(tableName,userName,builder){
+    console.log('in the checkmemberduplicate');
+    return new Promise((resolve,reject) => {
+        connection.query(
+            'SELECT * FROM ??',
+            [tableName],
+            (error,results) => {
+                
+            results.map((val)=>{
+                 console.log('in the map');
+                    if(val.userName === userName){
+                        return reject;
+                    }
+                });
+            
+            return resolve(tableName,userName,builder);
+                
+            })
+    })
+    
+}
+
 function registerMember(tableName,userName,builder){
+    console.log('in the registerMamber');
+    
+   
     if(builder === 'true'){
         builder = 1;
     }else{
@@ -56,7 +83,10 @@ function registerMember(tableName,userName,builder){
                 resolve(tableName);
             })
     })
+    
+    
 }
+
 
 function removeMember(userName,tableName){
     return new Promise((resolve,reject) => {
@@ -94,6 +124,8 @@ io.on(('connect'),(socket)=>{
     let userName;
     let roomName;
     let tableName;
+    let gameRoomName;
+    let cardTableName;
     
     socket.on('ready',(newUserName,newRoomName,builder)=>{
         userName = newUserName;
@@ -102,6 +134,7 @@ io.on(('connect'),(socket)=>{
         socket.join(roomName);
         
         if(builder === 'true'){
+                
             createTable(tableName,userName,builder)
                 .then(registerMember(tableName,userName,builder))
                 .then(connection.query(
@@ -112,17 +145,52 @@ io.on(('connect'),(socket)=>{
                         socket.emit('getReady',results);
                     }
                 ));
+            
         }else{
-            registerMember(tableName,userName,builder)
-                .then(connection.query(
-                    'SELECT * FROM ??',
-                    [tableName],
-                    (error,results) => {
-                        socket.to(roomName).emit('getReady',results);
-                        socket.emit('getReady',results);
-                    }
-                ));
-        }
+            let nameDuplicate;
+            
+            if(builder === 'true'){
+                    builder = 1;
+                }else{
+                    builder = 0;
+                }
+            
+            connection.query(
+                'SELECT * FROM ??',
+                [tableName],
+                (error,results) => {
+                    
+                        results.map((val) => {
+                            
+                            if(val.userName === userName){
+                                console.log('nameDuplicate deteceted');
+                                nameDuplicate = true;
+                            }
+                            
+                        })
+                        
+                        if(nameDuplicate){
+                            socket.to(roomName).emit('getReady',results);
+                            socket.emit('getReady',results);
+                        }else{        
+                        connection.query(
+                            'INSERT INTO ?? VALUE (0,?,?)',
+                            [tableName, userName, builder],
+                            (error,results) => {
+                                if(error){console.log(error)}else{console.log('register complete')}
+                                connection.query(
+                                    'SELECT * FROM ??',
+                                    [tableName],
+                                    (error,results) => {
+                                        socket.to(roomName).emit('getReady',results);
+                                        socket.emit('getReady',results);
+                                    })
+                            })
+                        }            
+                                    
+                }
+                
+        )}
         
         
         
@@ -134,47 +202,106 @@ io.on(('connect'),(socket)=>{
     socket.on('gameStart',(newUserName,newRoomName,builder) => {
         userName = newUserName;
         roomName = newRoomName;
-        tableName = 'member_list_of_'+roomName;
+        tableName = 'member_list_of_'+newRoomName;
+        cardTableName = 'card_list_of_'+newRoomName
         socket.join(roomName);
         
         
-        function emitData(queryResults){
-            return new Promise((resolve,reject) => {
-                console.log(queryResults);
-                socket.to(roomName).emit('loadGame',queryResults);
-                socket.emit('loadGame',queryResults);
-                resolve();
-            })
-        }
-        
         if(builder === 'true'){
-            createTable(tableName,userName,builder)
-                .then(registerMember(tableName,userName,builder))
-                .then(connection.query(
+            let players;
+            connection.query(
                     'SELECT * FROM ??',
                     [tableName],
                     (error,results) => {
-                        socket.to(roomName).emit('loadGame',results);
-                        socket.emit('loadGame',results);
-                    }))
+                        players = results;
+                        
+                        connection.query(
+                            'TRUNCATE TABLE ??',
+                            [cardTableName],
+                            (error,results) => {
+                                connection.query(
+                            'CREATE TABLE ??(id INT AUTO_INCREMENT,cardName TEXT,PRIMARY KEY(id))',
+                            [cardTableName],
+                            (error,results) => {
+                                let cardArr = SetCards(players.length);
+                                
+                                cardArr.map((val) => {
+                                    connection.query(
+                                        'INSERT INTO ?? VALUE (0,?)',
+                                        [cardTableName,val],
+                                        (error,results) => {
+                                        })
+                                })
+                                
+                                connection.query(
+                                    'SELECT * FROM ??',
+                                    [cardTableName],
+                                    (error,results) => {
+                                        socket.to(roomName).emit('loadGame',players,results);
+                                        socket.emit('loadGame',players,results);
+                                    })
+                            }
+                            )
+                                
+                            }
+                            )
+                        
+                        // connection.query(
+                        //     'CREATE TABLE ??(id INT AUTO_INCREMENT,cardName TEXT,PRIMARY KEY(id))',
+                        //     [cardTableName],
+                        //     (error,results) => {
+                        //         let cardArr = SetCards(players.length);
+                                
+                        //         cardArr.map((val) => {
+                        //             connection.query(
+                        //                 'INSERT INTO ?? VALUE (0,?)',
+                        //                 [cardTableName,val],
+                        //                 (error,results) => {
+                        //                 })
+                        //         })
+                                
+                        //         connection.query(
+                        //             'SELECT * FROM ??',
+                        //             [cardTableName],
+                        //             (error,results) => {
+                        //                 socket.to(roomName).emit('loadGame',players,results);
+                        //                 socket.emit('loadGame',players,results);
+                        //             })
+                        //     }
+                        //     )
+                            
+                            
+                        
+                    })
         }else{
-            registerMember(tableName,userName,builder)
-                .then(connection.query(
+            let players;
+            connection.query(
                     'SELECT * FROM ??',
                     [tableName],
                     (error,results) => {
-                        socket.to(roomName).emit('loadGame',results);
-                        socket.emit('loadGame',results);
-                    }))
+                        players = results;
+                        connection.query(
+                            'SELECT * FROM ??',
+                            [cardTableName],
+                            (error,results) => {
+                                socket.to(roomName).emit('loadGame',players,results);
+                                socket.emit('loadGame',players,results);
+                            })
+                        
+                    })
         }
         
     })
     
+    socket.on('loadComp',(newUserName,newRoomName,newBuilder)=>{
+        gameRoomName = newRoomName + '_game'
+        socket.join('gameRoomName');
+    })
     
-    socket.on('disconnect',()=>{
+    
+    socket.on('disconnect',(event)=>{
         console.log('user left');
-        removeMember(userName,tableName)
-            .then(checkEmpty(tableName));
+        console.log(gameRoomName);
         
     })
 })
