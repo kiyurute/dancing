@@ -14,7 +14,8 @@ const Ready = ({location}) => {
     const [builder,setBuilder] = useState('');
     const [members,setMembers] = useState([]);
     const [gameState,setGameState] = useState('ready');
-    const ENDPOINT='https://e0f956dc573149fcb26e0a1aecf31d9e.vfs.cloud9.ap-northeast-1.amazonaws.com:8081';
+    //const ENDPOINT='https://e0f956dc573149fcb26e0a1aecf31d9e.vfs.cloud9.ap-northeast-1.amazonaws.com:8081';
+    const ENDPOINT='localhost:8081';
     
     let gameStart;
     
@@ -44,7 +45,8 @@ const Ready = ({location}) => {
         
         socket.on('loadGame',() => {
             console.log('loadGame');
-            let url = 'https://e0f956dc573149fcb26e0a1aecf31d9e.vfs.cloud9.ap-northeast-1.amazonaws.com/game?userName='+userName+'&roomName='+roomName+'&builder='+builder
+            //let url = 'https://e0f956dc573149fcb26e0a1aecf31d9e.vfs.cloud9.ap-northeast-1.amazonaws.com/game?userName='+userName+'&roomName='+roomName+'&builder='+builder
+            let url = 'http://localhost:3000/game?userName='+userName+'&roomName='+roomName+'&builder='+builder
             // window.location.href ='https://e0f956dc573149fcb26e0a1aecf31d9e.vfs.cloud9.ap-northeast-1.amazonaws.com/game'
             window.location.href =url
         })

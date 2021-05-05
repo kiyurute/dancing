@@ -17,136 +17,164 @@ import plan from './cards/plan.svg';
 import rumor from './cards/rumor.svg';
 import witness from './cards/witness.svg';
 
+function alibiFunc(){}
+function boyFunc(){}
+function criminalFunc(){}
+function dealingFunc(){}
+function detectiveFunc(){}
+function discovererFunc(){}
+function dogFunc(){}
+function manipulationFunc(){}
+function normalFunc(){}
+function planFunc(){}
+function rumorFunc(){}
+function witnessFunc(){}
+
 const MyCards = (props) =>{
     
-    const [myCardA,setMyCardA] = useState();
-    const [myCardB,setMyCardB] = useState();
-    const [myCardC,setMyCardC] = useState();
-    const [myCardD,setMyCardD] = useState();
-    const [turnState,setTurnState] = useState(false);
-    
-    let myCardsArr;
-    
-    useEffect(() => {
-        
-        console.log(props.players);
-        console.log(props.cards);
-        console.log(props.playerName);
-        
-        
-        props.players.map((players) => {
-            if(players.userName === props.playerName){
-                console.log(props.cards.slice(players.id*4-4,players.id*4));
-                myCardsArr = props.cards.slice(players.id*4-4,players.id*4);
-            }
-        })
-        
-        DistributeCards(myCardsArr);
-        
-        myCardsArr.map((val) => {
-            if(val.cardName === 'discoverer'){
-                setTurnState(true);
-            }
-        })
-        
-    })
+    // const [myCardA,setMyCardA] = useState();
+    // const [myCardB,setMyCardB] = useState();
+    // const [myCardC,setMyCardC] = useState();
+    // const [myCardD,setMyCardD] = useState();
+    // const [turnState,setTurnState] = useState(false);
+    // const [update,setUpdate] = useState(false);
     
     
-    useEffect(() => {
-        console.log(turnState);
-    },[turnState])
+    // useEffect(() => {
+        
+    //     console.log(props.players);
+    //     console.log(props.myCards);
+    //     console.log(props.playerName);
+        
+    //     DistributeCards(props.myCards);
+        
+    //     console.log('in mycards effect');
+        
+    // },[])
+    
+
+    
+    // console.log(props.update)
     
     
+    
+    
+    // const DistributeCards = (myCardsArr) => {
+        
+
+                
+    
+  
+            
+   
+    //     }
+    
+    
+    
+        
+        
+    
+    //--------------------------------------------------------------------------------------------------
+    
+    
+    let MyCardA;
+    let MyCardB;
+    let MyCardC;
+    let MyCardD;
     
     const DistributeCards = (myCardsArr) => {
         
         switch(myCardsArr[0].cardName){
-                case 'alibi':setMyCardA(alibi);break;
-                case 'boy':setMyCardA(boy);break;
-                case 'criminal':setMyCardA(criminal);break;
-                case 'dealing':setMyCardA(dealing);break;
-                case 'detective':setMyCardA(detective);break;
-                case 'discoverer':setMyCardA(discoverer);break;
-                case 'dog':setMyCardA(dog);break;
-                case 'manipulation':setMyCardA(manipulation);break;
-                case 'normal':setMyCardA(normal);break;
-                case 'plan': setMyCardA(plan);break;
-                case 'rumor':setMyCardA(rumor);break;
-                case 'witness':setMyCardA(witness);break;
+                case 'alibi':MyCardA = (<img src={alibi} onClick={() => {props.alibiFunc(myCardsArr[0].id)}}/>);break;
+                case 'boy':MyCardA = (<img src={boy} onClick={() => {props.boyFunc(myCardsArr[0].id)}}/>);break;
+                case 'criminal':MyCardA = (<img src={criminal} onClick={() => {props.criminalFunc(myCardsArr[0].id)}}/>);break;
+                case 'dealing':MyCardA = (<img src={dealing} onClick={() => {props.dealingFunc(myCardsArr[0].id)}}/>);break;
+                case 'detective':MyCardA = (<img src={detective} onClick={() => {props.detectiveFunc(myCardsArr[0].id)}}/>);break;
+                case 'discoverer':MyCardA = (<img src={discoverer} onClick={() => {props.discovererFunc(myCardsArr[0].id)}}/>);break;
+                case 'dog':MyCardA = (<img src={dog} onClick={() => {props.dogFunc(myCardsArr[0].id)}}/>);break;
+                case 'manipulation':MyCardA = (<img src={manipulation} onClick={() => {props.manipulationFunc(myCardsArr[0].id)}}/>);break;
+                case 'normal':MyCardA = (<img src={normal} onClick={() => {props.normalFunc(myCardsArr[0].id)}}/>);break;
+                case 'plan': MyCardA = (<img src={plan} onClick={() => {props.planFunc(myCardsArr[0].id)}}/>);break;
+                case 'rumor':MyCardA = (<img src={rumor} onClick={() => {props.rumorFunc(myCardsArr[0].id)}}/>);break;
+                case 'witness':MyCardA = (<img src={witness} onClick={() => {props.witnessFunc(myCardsArr[0].id)}}/>);break;
+                case 'empty':break;
             }
                 
             switch(myCardsArr[1].cardName){
-                case 'alibi':setMyCardB(alibi);break;
-                case 'boy':setMyCardB(boy);break;
-                case 'criminal':setMyCardB(criminal);break;
-                case 'dealing':setMyCardB(dealing);break;
-                case 'detective':setMyCardB(detective);break;
-                case 'discoverer':setMyCardB(discoverer);break;
-                case 'dog':setMyCardB(dog);break;
-                case 'manipulation':setMyCardB(manipulation);break;
-                case 'normal':setMyCardB(normal);break;
-                case 'plan':setMyCardB(plan);break;
-                case 'rumor':setMyCardB(rumor);break;
-                case 'witness':setMyCardB(witness);break;
+                case 'alibi':MyCardB = (<img src={alibi} onClick={() => {props.alibiFunc(myCardsArr[1].id)}}/>);break;
+                case 'boy':MyCardB = (<img src={boy} onClick={() => {props.boyFunc(myCardsArr[1].id)}}/>);break;
+                case 'criminal':MyCardB = (<img src={criminal} onClick={() => {props.criminalFunc(myCardsArr[1].id)}}/>);break;
+                case 'dealing':MyCardB = (<img src={dealing} onClick={() => {props.dealingFunc(myCardsArr[1].id)}}/>);break;
+                case 'detective':MyCardB = (<img src={detective} onClick={() => {props.detectiveFunc(myCardsArr[1].id)}}/>);break;
+                case 'discoverer':MyCardB = (<img src={discoverer} onClick={() => {props.discovererFunc(myCardsArr[1].id)}}/>);break;
+                case 'dog':MyCardB = (<img src={dog} onClick={() => {props.dogFunc(myCardsArr[1].id)}}/>);break;
+                case 'manipulation':MyCardB = (<img src={manipulation} onClick={() => {props.manipulationFunc(myCardsArr[1].id)}}/>);break;
+                case 'normal':MyCardB = (<img src={normal} onClick={() => {props.normalFunc(myCardsArr[1].id)}}/>);break;
+                case 'plan':MyCardB = (<img src={plan} onClick={() => {props.planFunc(myCardsArr[1].id)}}/>);break;
+                case 'rumor':MyCardB = (<img src={rumor} onClick={() => {props.rumorFunc(myCardsArr[1].id)}}/>);break;
+                case 'witness':MyCardB = (<img src={witness} onClick={() => {props.witnessFunc(myCardsArr[1].id)}}/>);break;
+                case 'empty':break;
             }
             
              switch(myCardsArr[2].cardName){
-                case 'alibi':setMyCardC(alibi);break;
-                case 'boy':setMyCardC(boy);break;
-                case 'criminal':setMyCardC(criminal);break;
-                case 'dealing':setMyCardC(dealing);break;
-                case 'detective':setMyCardC(detective);break;
-                case 'discoverer':setMyCardC(discoverer);break;
-                case 'dog':setMyCardC(dog);break;
-                case 'manipulation':setMyCardC(manipulation);break;
-                case 'normal':setMyCardC(normal);break;
-                case 'plan':setMyCardC(plan);break;
-                case 'rumor':setMyCardC(rumor);break;
-                case 'witness':setMyCardC(witness);break;
+                case 'alibi':MyCardC = (<img src={alibi} onClick={() => {props.alibiFunc(myCardsArr[2].id)}}/>);break;
+                case 'boy':MyCardC = (<img src={boy} onClick={() => {props.boyFunc(myCardsArr[2].id)}}/>);break;
+                case 'criminal':MyCardC = (<img src={criminal} onClick={() => {props.criminalFunc(myCardsArr[2].id)}}/>);break;
+                case 'dealing':MyCardC = (<img src={dealing} onClick={() => {props.dealingFunc(myCardsArr[2].id)}}/>);break;
+                case 'detective':MyCardC = (<img src={detective} onClick={() => {props.detectiveFunc(myCardsArr[2].id)}}/>);break;
+                case 'discoverer':MyCardC = (<img src={discoverer} onClick={() => {props.discovererFunc(myCardsArr[2].id)}}/>);break;
+                case 'dog':MyCardC = (<img src={dog} onClick={() => {props.dogFunc(myCardsArr[2].id)}}/>);break;
+                case 'manipulation':MyCardC = (<img src={manipulation} onClick={() => {props.manipulationFunc(myCardsArr[2].id)}}/>);break;
+                case 'normal':MyCardC = (<img src={normal} onClick={() => {props.normalFunc(myCardsArr[2].id)}}/>);break;
+                case 'plan':MyCardC = (<img src={plan} onClick={() => {props.planFunc(myCardsArr[2].id)}}/>);break;
+                case 'rumor':MyCardC = (<img src={rumor} onClick={() => {props.rumorFunc(myCardsArr[2].id)}}/>);break;
+                case 'witness':MyCardC = (<img src={witness} onClick={() => {props.witnessFunc(myCardsArr[2].id)}}/>);break;
+                case 'empty':;break;
             }
             
              switch(myCardsArr[3].cardName){
-                case 'alibi':setMyCardD(alibi);break;
-                case 'boy':setMyCardD(boy);break;
-                case 'criminal':setMyCardD(criminal);break;
-                case 'dealing':setMyCardD(dealing);break;
-                case 'detective':setMyCardD(detective);break;
-                case 'discoverer':setMyCardD(discoverer);break;
-                case 'dog':setMyCardD(dog);break;
-                case 'manipulation':setMyCardD(manipulation);break;
-                case 'normal':setMyCardD(normal);break;
-                case 'plan':setMyCardD(plan);break;
-                case 'rumor':setMyCardD(rumor);break;
-                case 'witness':setMyCardD(witness);break;
+                case 'alibi':MyCardD = (<img src={alibi} onClick={() => {props.alibiFunc(myCardsArr[3].id)}}/>);break;
+                case 'boy':MyCardD = (<img src={boy} onClick={() => {props.boyFunc(myCardsArr[3].id)}}/>);break;
+                case 'criminal':MyCardD = (<img src={criminal} onClick={() => {props.criminalFunc(myCardsArr[3].id)}}/>);break;
+                case 'dealing':MyCardD = (<img src={dealing} onClick={() => {props.dealingFunc(myCardsArr[3].id)}}/>);break;
+                case 'detective':MyCardD = (<img src={detective} onClick={() => {props.detectiveFunc(myCardsArr[3].id)}}/>);break;
+                case 'discoverer':MyCardD = (<img src={discoverer} onClick={() => {props.discovererFunc(myCardsArr[3].id)}}/>);break;
+                case 'dog':MyCardD = (<img src={dog} onClick={() => {props.dogFunc(myCardsArr[3].id)}}/>);break;
+                case 'manipulation':MyCardD = (<img src={manipulation} onClick={() => {props.manipulationFunc(myCardsArr[3].id)}}/>);break;
+                case 'normal':MyCardD = (<img src={normal} onClick={() => {props.normalFunc(myCardsArr[3].id)}}/>);break;
+                case 'plan':MyCardD = (<img src={plan} onClick={() => {props.planFunc(myCardsArr[3].id)}}/>);break;
+                case 'rumor':MyCardD = (<img src={rumor} onClick={() => {props.rumorFunc(myCardsArr[3].id)}}/>);break;
+                case 'witness':MyCardD = (<img src={witness} onClick={() => {props.witnessFunc(myCardsArr[3].id)}}/>);break;
+                case 'empty':;break;
             }
             
         }
-    
-    
+        
+    DistributeCards(props.myCards);
+        
+        
     return (
         <div>
         
             <div className='row pb-3'>
                 <div className='col-6'>
-                    <img src={myCardA} />
+                    {MyCardA}
                 </div>
                 <div className='col-6'>
-                    <img src={myCardB} />
+                    {MyCardB}
                 </div>
             </div>
             
             <div className='row'>
                 <div className='col-6'>
-                    <img src={myCardC} />
+                    {MyCardC}
                 </div>
                 <div className='col-6'>
-                    <img src={myCardD} />
+                    {MyCardD}
                 </div>
             </div>
         </div>
         )
-        
-        
         
         
 }
