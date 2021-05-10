@@ -25,7 +25,7 @@ const Backs = (props) => {
     firstCardsSet.map((cards,i) => {
         if(cards.cardName !== 'empty'){
             firstCardView.push(
-                    <div className="col-3" key={i}>
+                    <div className="col-3 pr-1 pl-0" key={i}>
                     <img src={backside} className='w-100' />
                     </div>
                     )
@@ -35,7 +35,7 @@ const Backs = (props) => {
     secondCardsSet.map((cards,i) => {
         if(cards.cardName !== 'empty'){
             secondCardView.push(
-                    <div className="col-3" key={i}>
+                    <div className="col-3 pr-1 pl-0" key={i}>
                     <img src={backside} className='w-100' />
                     </div>
                     )
@@ -45,7 +45,7 @@ const Backs = (props) => {
     thirdCardsSet.map((cards,i) => {
         if(cards.cardName !== 'empty'){
             thirdCardView.push(
-                    <div className="col-3" key={i}>
+                    <div className="col-3 pr-1 pl-0" key={i}>
                     <img src={backside} className='w-100' />
                     </div>
                     )
@@ -58,17 +58,17 @@ const Backs = (props) => {
     return(
         <div>
         
-          <div className="row">
+          <div className="row pb-3">
                 <p className='mb-0'>{props.members[0].userName}</p>
                 {firstCardView}
            </div>
            
-           <div className="row">
+           <div className="row pb-3">
                 <p className='mb-0'>{props.members[1].userName}</p>
                 {secondCardView}
            </div>
            
-           <div className="row">
+           <div className="row pb-3">
                 <p className='mb-0'>{props.members[2].userName}</p>
                 {thirdCardView}
            </div>

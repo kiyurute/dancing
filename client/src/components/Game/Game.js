@@ -11,6 +11,10 @@ import backside from './cards/backside.svg';
 
 import './style.css';
 
+import AllCards from './AllCards';
+
+import FooterLogo from './logo/footerLogo.svg';
+
 let socket;
 
 const Game = ({location}) => {
@@ -34,6 +38,7 @@ const Game = ({location}) => {
     
     let myCardsArr = [];
     let membersArr = [];
+
     
     
     useEffect(()=>{
@@ -81,7 +86,7 @@ const Game = ({location}) => {
             
             let firstPlayer;
             
-             setMyCards(<MyCards players={member} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} rumorFunc={rumorFunc} discovererFunc={discovererFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc}/>)
+             setMyCards(<MyCards players={member} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} rumorFunc={rumorFunc} discovererFunc={discovererFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc} criminalFunc={criminalFunc}/>)
             
             myCardsArr.map((val) => {
                 if(val.cardName === 'discoverer'){
@@ -89,7 +94,7 @@ const Game = ({location}) => {
                             return (players.userName === userName);
                     })
                     
-                    setModal(<Modal>あなたの番です</Modal>);
+                    setModal(<Modal>あなたの番です。「第一発見者」を出して下さい。</Modal>);
                     setTurnState(userName);
                 }
             })
@@ -113,9 +118,11 @@ const Game = ({location}) => {
                      }
             
                 })
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc}/>)
+
+
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
-            setMessage([...message,<p key={0}>{alibiName}がアリバイを使用しました。</p>]);
+            setMessage([...message,alibiName+'がアリバイを使用しました。']);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
 
             let alibiID;
@@ -139,11 +146,6 @@ const Game = ({location}) => {
                     break;
             }
 
-            console.log('planState1 is')
-            console.log(window.sessionStorage.getItem(['planState1']));
-            console.log('planState2 is')
-            console.log(window.sessionStorage.getItem(['planState2']));
-
         })
         
         
@@ -160,7 +162,7 @@ const Game = ({location}) => {
                      }
             
                 })
-                setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc}/>)
+                setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc} criminalFunc={criminalFunc}/>)
                 setTurnNum(turnNum + 1);
                 
                 console.log(first);
@@ -176,19 +178,19 @@ const Game = ({location}) => {
                         
                             if(players.id === 1){
                                 console.log('case1');
-                                rumorResults.push(<p key={1}>{membersArr[1].userName}から{second.cardName}をもらいました。{membersArr[2].userName}に{first.cardName}を渡しました。</p>);
+                                rumorResults.push(<p key={1}>{membersArr[1].userName}から{translate(second.cardName)}をもらいました。{membersArr[2].userName}に{translate(first.cardName)}を渡しました。</p>);
                                 console.log(rumorResults);
                                 let newMessage = [...message,rumorResults];
                                 setMessage(newMessage);
                             }else if(players.id === 2){
                                 console.log('case2');
-                                rumorResults.push(<p key={1}>{membersArr[2].userName}から{third.cardName}をもらいました。{membersArr[0].userName}に{second.cardName}を渡しました。</p>);
+                                rumorResults.push(<p key={1}>{membersArr[2].userName}から{translate(third.cardName)}をもらいました。{membersArr[0].userName}に{translate(second.cardName)}を渡しました。</p>);
                                 console.log(rumorResults);
                                 let newMessage = [...message,rumorResults];
                                 setMessage(newMessage);
                             }else if(players.id === 3){
                                 console.log('case3');
-                                rumorResults.push(<p key={1}>{membersArr[0].userName}から{first.cardName}をもらいました。{membersArr[1].userName}に{third.cardName}を渡しました。</p>);
+                                rumorResults.push(<p key={1}>{membersArr[0].userName}から{translate(first.cardName)}をもらいました。{membersArr[1].userName}に{translate(third.cardName)}を渡しました。</p>);
                                 console.log(rumorResults);
                                 let newMessage = [...message,rumorResults];
                                 setMessage(newMessage);
@@ -251,12 +253,12 @@ const Game = ({location}) => {
 
                 
                 console.log(myCardsArr);
-                setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc}/>)
+                setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc} criminalFunc={criminalFunc}/>)
                 setTurnNum(turnNum + 1);
                 console.log(turnNum);
                 console.log(discovererID);
                 
-                setMessage([...message,<p>{discovererName}が第一発見者です。</p>]);
+                setMessage([...message,discovererName+'が第一発見者です']);
                 setMemberData(<Backs cards={cards} members={membersArr}/>);
 
                 switch(discovererID){
@@ -304,11 +306,11 @@ const Game = ({location}) => {
                         dealingCounter += 1;
                     }else if(card.cardName === 'dealing' && dealingCounter >= 1){
                         cardChoices.push(
-                        <p key={i+1} style={{cursor:'pointer'}} onClick={() => {sendDealing(memberName,card.cardName)}}>{card.cardName}</p>
+                        <p key={i+1} style={{cursor:'pointer'}} onClick={() => {sendDealing(memberName,card.cardName)}}>{translate(card.cardName)}</p>
                         )
                     }else{
                         cardChoices.push(
-                        <p key={i+1} style={{cursor:'pointer'}} onClick={() => {sendDealing(memberName,card.cardName)}}>{card.cardName}</p>
+                        <p key={i+1} style={{cursor:'pointer'}} onClick={() => {sendDealing(memberName,card.cardName)}}>{translate(card.cardName)}</p>
                         )
                     }
                 })
@@ -334,7 +336,7 @@ const Game = ({location}) => {
                         //not add
                     }else{
                         cardChoices.push(
-                        <p key={i+1} style={{cursor:'pointer'}} onClick={() => {sendOpponentCard(card.cardName)}}>{card.cardName}</p>
+                        <p key={i+1} style={{cursor:'pointer'}} onClick={() => {sendOpponentCard(card.cardName)}}>{translate(card.cardName)}</p>
                         )
                     }
                 })
@@ -354,7 +356,7 @@ const Game = ({location}) => {
                      }
                 })
                 
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
             setMessage([...message,<p key={0}>{originPlayer}が{opponentPlayer}と取引をしました。</p>]);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
@@ -413,7 +415,7 @@ const Game = ({location}) => {
                     
                 }else{
                 manipulationMessage.push(
-                    <p key={i+1} style={{cursor:'pointer'}} onClick={() => {manipulationSelected(card.id)}}>{card.cardName}</p>
+                    <p key={i+1} style={{cursor:'pointer'}} onClick={() => {manipulationSelected(card.id)}}>{translate(card.cardName)}</p>
                     )
                 }
             })
@@ -433,7 +435,7 @@ const Game = ({location}) => {
                 setMessage([...message,<p>他のプレイヤーを待っています。</p>])
             }
                 
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
             setMessage([...message,manipulationMessage]);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
@@ -456,20 +458,20 @@ const Game = ({location}) => {
             membersArr.map((players) => {
                     if(players.userName === userName){
                         if(players.id === 1){
-                            manipulationMessage.push(<p key={1}>{membersArr[2].userName}に{manipulationCardsName[0]}を渡しました。</p>)
-                            manipulationMessage.push(<p key={2}>{membersArr[1].userName}から{manipulationCardsName[1]}を受け取りました。</p>)
+                            manipulationMessage.push(<p key={1}>{membersArr[2].userName}に{translate(manipulationCardsName[0])}を渡しました。</p>)
+                            manipulationMessage.push(<p key={2}>{membersArr[1].userName}から{translate(manipulationCardsName[1])}を受け取りました。</p>)
                         }else if(players.id === 2){
-                            manipulationMessage.push(<p key={1}>{membersArr[0].userName}に{manipulationCardsName[1]}を渡しました。</p>)
-                            manipulationMessage.push(<p key={2}>{membersArr[2].userName}から{manipulationCardsName[2]}を受け取りました。</p>)
+                            manipulationMessage.push(<p key={1}>{membersArr[0].userName}に{translate(manipulationCardsName[1])}を渡しました。</p>)
+                            manipulationMessage.push(<p key={2}>{membersArr[2].userName}から{translate(manipulationCardsName[2])}を受け取りました。</p>)
                         }else{
-                            manipulationMessage.push(<p key={1}>{membersArr[1].userName}に{manipulationCardsName[2]}を渡しました。</p>)
-                            manipulationMessage.push(<p key={2}>{membersArr[0].userName}から{manipulationCardsName[0]}を受け取りました。</p>)
+                            manipulationMessage.push(<p key={1}>{membersArr[1].userName}に{translate(manipulationCardsName[2])}を渡しました。</p>)
+                            manipulationMessage.push(<p key={2}>{membersArr[0].userName}から{translate(manipulationCardsName[0])}を受け取りました。</p>)
                         }
                     }
             })
 
                 
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
             setMessage([...message,manipulationMessage]);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
@@ -598,7 +600,7 @@ const Game = ({location}) => {
                 }
             })
 
-            let dogCompMessage = [<p key={0}>{dogUserName}が犬を使いました。{selectedPlayerName}が{results[0].cardName}を持っていました。</p>]
+            let dogCompMessage = [<p key={0}>{dogUserName}が犬を使いました。{selectedPlayerName}が{translate(results[0].cardName)}を持っていました。</p>]
 
             membersArr.map((players) => {
                 if(players.userName === userName){
@@ -606,7 +608,7 @@ const Game = ({location}) => {
                  }
             })
 
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
             setMessage([...message,dogCompMessage]);
@@ -676,7 +678,7 @@ const Game = ({location}) => {
                 if(card.cardName === 'empty'){
 
                 }else{
-                    selectedPlayersCardsNoEmpty.push(card.cardName+',');
+                    selectedPlayersCardsNoEmpty.push(translate(card.cardName)+',');
                 }
             })
 
@@ -689,7 +691,7 @@ const Game = ({location}) => {
             })
 
             setMessage([...message,<p key={0}>{selectedPlayerName}は以下のカードを持っています。</p>,witnessCompSelfMessage]);
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
 
@@ -731,8 +733,8 @@ const Game = ({location}) => {
                  }
             })
 
-            setMessage([...message,witnessCompMessage]);
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
+            setMessage({...message,witnessCompMessage});
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
 
@@ -773,7 +775,7 @@ const Game = ({location}) => {
             })
 
             setMessage([...message,normalMessage]);
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
 
@@ -832,7 +834,7 @@ const Game = ({location}) => {
             })
 
             setMessage([...message,<p>{criminalOwner}が「犯人」を持っています。</p>]);
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
 
@@ -867,7 +869,7 @@ const Game = ({location}) => {
             })
 
             setMessage([...message,<p key={0}>{boyPlayerName}が「少年」を使い、「犯人」の持ち主を知りました。</p>]);
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
 
@@ -925,7 +927,7 @@ const Game = ({location}) => {
             let selectedPlayerName = selectedPlayer.userName;
             
             setMessage([...message,<p key={0}>{detectivePlayerName}が「探偵」を使い、{selectedPlayerName}を犯人だと疑いましたが、失敗しました。</p>]);
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
 
@@ -964,7 +966,7 @@ const Game = ({location}) => {
             }else{}
 
             setMessage([...message,<p key={0}>{planPlayerName}が「たくらみ」を使い、犯人の見方になりました。</p>]);
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
 
@@ -995,6 +997,18 @@ const Game = ({location}) => {
             console.log(window.sessionStorage.getItem(['planState2']));
 
         })
+
+        const criminalFunc = (cardID) => {
+            socket.emit('criminal',cardID,userName)
+        }
+
+        socket.on('criminalMiss',() => {
+            console.log('criminalMIss');
+        })
+
+        socket.on('criminalSuccess',(criminalPlayerName) => {
+            console.log('winner:'+criminalPlayerName)
+        })
         
     },[])
     
@@ -1003,84 +1017,219 @@ const Game = ({location}) => {
         console.log(turnState);
     },[turnState])
     
-    let gameMessage = message.map((val,i) => {
-        return (
-                val
-                )
-    })
+    // let gameMessage = message.map((val,i) => {
+    //     return (
+    //             val
+    //             )
+    // })
     
     if(turnState === userName){
 
     return(
+        <>
+        {modal}
         <div className="container-fluid">
-            <div className="card">
-                <p>commentary</p>
-                <div className='row pt-2 overflow-scroll' style={{height:'200px'}}>
-                    {gameMessage}
+            <div className="row header">
+                        <div className="col-12 p-0">
+                            <p className="player-name">プレイヤー名：{userName}</p>
+                        </div>
+            </div>
+            <div className="row">
+                <div className="col-12 pt-3 pl-3 pr-3">
+                    <div className="card p-3 shadow-sm">
+                        <p>実況</p>
+                        <div className='row pt-2 overflow-scroll' style={{height:'200px'}}>
+                            {message.map((message) => {
+
+                                return (
+                                    <div>
+                                        <p>{message}</p>
+                                    </div>
+                                )
+
+                            })}
+                        </div>
+                    </div>
                 </div>
             </div>
             
             <div className="row">
             
-                <div className="col-md-6">
-                    <div className="card">
-                        <p>ターン:<span>{turnNum}</span>/4</p>
+                <div className="col-md-6 pt-3 pl-3">
+                    <div className="card p-3 shadow-sm">
+                        <p>みんなのカード</p>
                         {memberData}
-                        {console.log('rendering')}
                     </div>
                 </div>
                 
-                <div className="col-md-6">
-                    <div className="card">
-                        <p>あなたのカード</p>
-                        {myCards}
+                <div className="col-md-6 pt-3 pr-3">
+                    <div className="card shadow-sm">
+                        <div className="mycard-wrapper">
+                            <div className="mycards p-3">
+                                        <p>あなたのカード</p>
+                                        {myCards}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
             </div>
-            
-            
-            {modal}
+
+
+            <div className="row">
+                    <div className="col-12 p-3">
+                        <div className="card p-3 shadow-sm">
+                            <p>ルール等</p>
+                            <p>自分の番になったら自分のカードの中から一枚選んで使ってください。勝つ方法は次の3通りです。<br></br>・「探偵」のカードを使って犯人を持っている人を当てる<br></br>・「犯人」のカードを最後の一枚で使う<br></br>・「たくらみ」を使って犯人と一緒に勝つ</p>
+                        </div>
+                    </div>
+            </div>
+
+            <div className="row">
+                    <div className="col-12 p-3">
+                        <div className="card p-3 shadow-sm">
+                            <p>カード一覧</p>
+                            <AllCards />
+                        </div>
+                    </div>
+            </div>
+
+            <div className="row pt-4 pb-4">
+                <div className="col-2 mx-auto">
+                    <img src={FooterLogo} />
+                </div>
+            </div>
         </div>
+        </>
         )
 
     }else{
+        //-------------------------------------------------------------------------------------------------------------------------
         return(
+            <>
+            {modal}
+            
             <div className="container-fluid">
-                <div className="card">
-                    <p>commentary</p>
-                    <div className='row pt-2 overflow-scroll' style={{height:'200px'}}>
-                        {gameMessage}
+                <div className="row header">
+                        <div className="col-12 p-0">
+                            <p className="player-name">プレイヤー名：{userName}</p>
+                        </div>
+                </div>
+                <div className='row'>
+                    <div className='col-12 pt-3 pl-3 pr-3'>
+                        <div className="card p-3 shadow-sm shadow-sm">
+                            <p>実況</p>
+                            <div className='row pt-2 overflow-scroll' style={{height:'200px'}}>
+                            {message.map((message) => {
+
+                                return (
+                                    <div>
+                                        <p>{message}</p>
+                                    </div>
+                                )
+                                
+                                })}
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
                 <div className="row">
                 
-                    <div className="col-md-6">
-                        <div className="card">
-                            <p>ターン:<span>{turnNum}</span>/4</p>
+                    <div className="col-md-6 pt-3 pl-3">
+                        <div className="card p-3 shadow-sm">
+                            <p>みんなのカード</p>
                             {memberData}
-                            {console.log('rendering')}
                         </div>
                     </div>
                     
-                    <div className="col-md-6">
-                        <div className="card">
-                            <div className="cardscover">
-                            </div>
-                            <div className="mycards">
-                                <p>あなたのカード</p>{myCards}
+                    <div className="col-md-6 pt-3 pr-3">
+                        <div className="card shadow-sm">
+                            <div className="mycard-wrapper">
+                                <div className="cardscover">
+                                </div>
+                                <div className="mycards p-3">
+                                    <p>あなたのカード</p>
+                                    {myCards}
+                                </div>
                             </div>
                         </div>
                     </div>
                     
                 </div>
-                
-                
-                {modal}
+
+
+                <div className="row">
+                    <div className="col-12 p-3">
+                        <div className="card p-3 shadow-sm">
+                            <p>ルール等</p>
+                            <p>自分の番になったら自分のカードの中から一枚選んで使ってください。勝つ方法は次の3通りです。<br></br>・「探偵」のカードを使って犯人を持っている人を当てる<br></br>・「犯人」のカードを最後の一枚で使う<br></br>・「たくらみ」を使って犯人と一緒に勝つ</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="row">
+                    <div className="col-12 p-3">
+                        <div className="card p-3 shadow-sm">
+                            <p>カード一覧</p>
+                            <AllCards />
+                        </div>
+                    </div>
+                </div>
+                <div className="row pt-4 pb-4">
+                    <div className="col-2 mx-auto">
+                        <img src={FooterLogo} />
+                    </div>
+                </div>
+
             </div>
+            </>
             )
     
+    }
+}
+
+const translate = (englishName) => {
+    switch(englishName){
+        case 'empty':
+            return 'empty';
+            break;
+        case 'alibi':
+            return '「アリバイ」';
+            break;
+        case 'boy':
+            return '「少年」';
+            break;
+        case 'criminal':
+            return '「犯人」'
+            break;
+        case 'dealing':
+            return '「取引」'
+            break;
+        case 'detective':
+            return '「探偵」'
+            break;
+        case 'discovere':
+            return '「第一発見者」'
+            break;
+        case 'dog':
+            return '「犬」'
+            break;
+        case 'manipulation':
+            return '「情報操作」'
+            break;
+        case 'normal':
+            return '「一般人」'
+            break;
+        case 'plan':
+            return '「たくらみ」'
+            break;
+        case 'rumor':
+            return '「噂」'
+            break;
+        case 'witness':
+            return '「目撃者」'
+            break;
     }
 }
 

@@ -126,6 +126,7 @@ io.on(('connect'),(socket)=>{
     let tableName;
     let gameRoomName;
     let cardTableName;
+    let msgTableName;
     
     socket.on('ready',(newUserName,newRoomName,builder)=>{
         userName = newUserName;
@@ -203,7 +204,8 @@ io.on(('connect'),(socket)=>{
         userName = newUserName;
         roomName = newRoomName;
         tableName = 'member_list_of_'+newRoomName;
-        cardTableName = 'card_list_of_'+newRoomName
+        cardTableName = 'card_list_of_'+newRoomName;
+        msgTableName = 'msg_list_of_'+newRoomName
         socket.join(roomName);
         
         
@@ -253,8 +255,14 @@ io.on(('connect'),(socket)=>{
         
         connection.query(
             'CREATE TABLE ??(id INT AUTO_INCREMENT,message TEXT,turnmessage BOOLEAN,PRIMARY KEY(id))',
-            ['msg_list_of_'+newRoomName],
-            (error,results) => {}
+            [msgTableName],
+            (error,results) => {
+                connection.query(
+                    'TRUNCATE TABLE ??',
+                    [msgTableName],
+                    (error,results) => {}
+                )
+            }
             )
             
         }else{
@@ -285,22 +293,34 @@ io.on(('connect'),(socket)=>{
     
     
     socket.on('alibi',(cardID,alibiName) => {
+
+        const alibiCalc = async() => {
         let cards;
-        connection.query(
-            `UPDATE ?? SET cardName='empty' WHERE id=?`,
-            [cardTableName,cardID],
-            (error,results) => {
-                connection.query(
-                    'SELECT * FROM ??',
-                    [cardTableName],
-                    (error,results) => {
-                        cards = results
-                        socket.to(roomName).emit('alibiComp',cards,alibiName);
-                        socket.emit('alibiComp',cards,alibiName);
-                    }
-                    )
-            }
-            )
+
+    
+
+            await connection.query(
+                `UPDATE ?? SET cardName='empty' WHERE id=?`,
+                [cardTableName,cardID],
+                (error,results) => {
+                    connection.query(
+                        'SELECT * FROM ??',
+                        [cardTableName],
+                        (error,results) => {
+                            cards = results;
+
+                            
+                                    allMessage = results;
+                                    socket.to(roomName).emit('alibiComp',cards,alibiName);
+                                    socket.emit('alibiComp',cards,alibiName);
+                             
+                        }
+                        )
+                }
+                )
+        }
+
+        alibiCalc()
     })
     
     
@@ -389,24 +409,33 @@ io.on(('connect'),(socket)=>{
     
     
     socket.on('discoverer',(userName) => {
-        let cards;
         console.log('discoverer');
-        connection.query(
-            `UPDATE ?? SET cardName='empty' WHERE cardName='discoverer'`,
-            [cardTableName],
-            (error,results) => {
-                connection.query(
-                    'SELECT * FROM ??',
-                    [cardTableName],
-                    (error,results) => {
-                        cards = results;
+
+        const discoverCalc = async() => {
+
+
+            let cards;
+            connection.query(
+                `UPDATE ?? SET cardName='empty' WHERE cardName='discoverer'`,
+                [cardTableName],
+                (error,results) => {
+                    connection.query(
+                        'SELECT * FROM ??',
+                        [cardTableName],
+                        (error,results) => {
+                            cards = results;
+
+                                        socket.to(roomName).emit('discovererComp',cards,userName);
+                                        socket.emit('discovererComp',cards,userName,); 
+                                
                         
-                                socket.to(roomName).emit('discovererComp',cards,userName);
-                                socket.emit('discovererComp',cards,userName); 
-                  
-                    }
-                    )
-            })
+                        }
+                        )
+                })
+
+        }
+
+        discoverCalc()
     })
     
     let originPlayer,originCard,opponentPlayer,opponentCard;
@@ -860,12 +889,70 @@ io.on(('connect'),(socket)=>{
 
         planCalc()
     })
+
+    socket.on('criminal',(cardID,criminalPlayerName) => {
+        const criminalCalc = async() => {
+            let allcards;
+            let firstCardSet = [];
+            let secondCardSet = [];
+            let thirdCardSet = [];
+
+            await connection.query(
+                'SELECT * FROM ??',
+                [cardTableName],
+                (error,results) => {
+                    allCards = results;
+                    firstCardSet = allCards.slice(0,4);
+                    secondCardSet = allCards.slice(4,8);
+                    thirdCardSet = allCards.slice(8,12);
+
+                    if(cardID >= 1 && cardID <= 4){
+                        let otherCard = firstCardSet.find((card) => card.cardName !== 'criminal' && card.cardName !== 'empty')
+                        if(otherCard !== undefined){
+                            socket.to(roomName).emit('criminalMiss');
+                            socket.emit('criminalMiss')
+                        }else{
+                            console.log('criminal success');
+                            socket.to(roomName).emit('criminalSuccess',criminalPlayerName);
+                            socket.emit('criminalSuccess',criminalPlayerName)
+                        }
+                    }else if(cardID >= 5 && cardID <= 8){
+                        let otherCard = secondCardSet.find((card) => card.cardName !== 'criminal' && card.cardName !== 'empty')
+                        if(otherCard !== undefined){
+                            socket.to(roomName).emit('criminalMiss');
+                            socket.emit('criminalMiss')
+                        }else{
+                            console.log('criminal success');
+                            socket.to(roomName).emit('criminalSuccess',criminalPlayerName);
+                            socket.emit('criminalSuccess',criminalPlayerName)
+                        }
+                    }else{
+                        let otherCard = thirdCardSet.find((card) => card.cardName !== 'criminal' && card.cardName !== 'empty')
+                        if(otherCard !== undefined){
+                            socket.to(roomName).emit('criminalMiss');
+                            socket.emit('criminalMiss')
+                        }else{
+                            console.log('criminal success');
+                            socket.to(roomName).emit('criminalSuccess',criminalPlayerName);
+                            socket.emit('criminalSuccess',criminalPlayerName)
+                        }
+        
+                    }
+                }
+            )
+
+
+        }
+
+        criminalCalc()
+    })
     
     socket.on('disconnect',(event)=>{
         console.log('user left');
         console.log(gameRoomName);
         
     })
+
     
     
     
