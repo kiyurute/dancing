@@ -277,7 +277,7 @@ io.on(('connect'),(socket)=>{
         
     })
     
-    socket.on('loadComp',(newUserName,newRoomName,newBuilder)=>{
+    socket.on('loadComp',(newUserName,newRoomName,newBuilder,turnState)=>{
         gameRoomName = newRoomName + '_game'
         socket.join('gameRoomName');
 
@@ -305,7 +305,7 @@ io.on(('connect'),(socket)=>{
     
     
     
-    socket.on('rumor',(cardID) => {
+    socket.on('rumor',(cardID,rumorPlayer) => {
         console.log('rumor');
         let cards;
         
@@ -371,8 +371,8 @@ io.on(('connect'),(socket)=>{
                                                     (error,results) => {
                                                         cards = results;
                                                         console.log(cards);
-                                                        socket.to(roomName).emit('rumorComp',cards,selectedFromFirstCardSet,selectedFromSecondCardSet,selectedFromThirdCardSet);
-                                                        socket.emit('rumorComp',cards,selectedFromFirstCardSet,selectedFromSecondCardSet,selectedFromThirdCardSet);
+                                                        socket.to(roomName).emit('rumorComp',cards,selectedFromFirstCardSet,selectedFromSecondCardSet,selectedFromThirdCardSet,rumorPlayer);
+                                                        socket.emit('rumorComp',cards,selectedFromFirstCardSet,selectedFromSecondCardSet,selectedFromThirdCardSet,rumorPlayer);
                                                     }
                                                     )
                                             }
@@ -548,7 +548,7 @@ io.on(('connect'),(socket)=>{
     })
     
    
-    socket.on('manipulationSelected',(cardID,userName,userID) => {
+    socket.on('manipulationSelected',(cardID,userName,userID,manipulationName) => {
         console.log(cardID,userName);
         console.log('memberID is');
         console.log(userID);
@@ -576,6 +576,8 @@ io.on(('connect'),(socket)=>{
             
             console.log('manipulationNewCardArr is');
             console.log(manipulationNewCardArr);
+
+            let manipulationCardsName = [];
             
             connection.query(
                 'SELECT * FROM ??',
@@ -584,6 +586,15 @@ io.on(('connect'),(socket)=>{
                     allCards = results;
                     console.log('before manipulation is');
                     console.log(allCards);
+                    allCards.map((card) => {
+                        if(card.id === manipulationNewCardArr[0]){
+                            manipulationCardsName[0] = card.cardName;
+                        }else if(card.id === manipulationNewCardArr[1]){
+                            manipulationCardsName[1] = card.cardName;
+                        }else if(card.id === manipulationNewCardArr[2]){
+                            manipulationCardsName[2] = card.cardName;
+                        }
+                    })
                     //2が選んだカードを1にセット
                     connection.query(
                         `UPDATE ?? SET cardName=? WHERE id=?`,
@@ -611,8 +622,8 @@ io.on(('connect'),(socket)=>{
                                                     manipulationUserArr = [];
                                                     manipulationCardArr = [];
                                                     manipulationNewCardArr = [];
-                                                    socket.to(roomName).emit('manipulationComp',results);
-                                                    socket.emit('manipulationComp',results);
+                                                    socket.to(roomName).emit('manipulationComp',results,manipulationCardsName,manipulationName);
+                                                    socket.emit('manipulationComp',results,manipulationCardsName,manipulationName);
                                                 }
                                                 )
                                         }
@@ -739,6 +750,115 @@ io.on(('connect'),(socket)=>{
         }
 
         dogCalc()
+    })
+
+    socket.on('detective',(cardID,selectedPlayerID,detectivePlayerName) => {
+
+        const detectiveCalc = async() => {
+            let allCards;
+            let criminal;
+            let criminalPlayerID;
+            let firstPlayerCards = [];
+            let secondPlayerCards = [];
+            let thirdPlayerCards = [];
+            let alibi;
+
+            await connection.query(
+                `UPDATE ?? SET cardName='empty' WHERE id=?`,
+                [cardTableName,cardID],
+                (error,results) => {
+                }
+            )
+
+            await connection.query(
+                'SELECT * FROM ??',
+                [cardTableName],
+                (error,results) => {
+                    allCards = results;
+                    criminal = allCards.find((v) => v.cardName === 'criminal');
+                    firstPlayerCards = allCards.slice(0,4);
+                    secondPlayerCards = allCards.slice(4,8);
+                    thirdPlayerCards = allCards.slice(8,12);
+                    console.log(firstPlayerCards,secondPlayerCards,thirdPlayerCards)
+
+                    if(criminal.id >= 1 && criminal.id <= 4){
+                        criminalPlayerID = 1;
+                    }else if(criminal.id >= 5 && criminal.id <= 8){
+                        criminalPlayerID = 2;
+                    }else{
+                        criminalPlayerID = 3;
+                    }
+
+                    if(selectedPlayerID === criminalPlayerID){
+                        switch(selectedPlayerID){
+                            case 1:
+                                alibi = firstPlayerCards.find((v) => v.cardName === 'alibi');
+                                if(alibi){
+                                    socket.to(roomName).emit('detectiveMiss',detectivePlayerName,selectedPlayerID,allCards)
+                                    socket.emit('detectiveMiss',detectivePlayerName,selectedPlayerID,allCards)
+                                }else{
+                                    socket.to(roomName).emit('detectiveSuccess',detectivePlayerName,criminalPlayerID,allCards)
+                                    socket.emit('detectiveSuccess',detectivePlayerName,criminalPlayerID,allCards)
+                                }
+                                break;
+                            case 2:
+                                alibi = secondPlayerCards.find((v) => v.cardName ==='alibi');
+                                if(alibi){
+                                    socket.to(roomName).emit('detectiveMiss',detectivePlayerName,selectedPlayerID,allCards)
+                                    socket.emit('detectiveMiss',detectivePlayerName,selectedPlayerID,allCards)
+                                }else{
+                                    socket.to(roomName).emit('detectiveSuccess',detectivePlayerName,criminalPlayerID,allCards)
+                                    socket.emit('detectiveSuccess',detectivePlayerName,criminalPlayerID,allCards)
+                                }
+                                break;
+                            case 3:
+                                alibi = thirdPlayerCards.find((v) => v.cardName === 'alibi');
+                                if(alibi){
+                                    socket.to(roomName).emit('detectiveMiss',detectivePlayerName,selectedPlayerID,allCards)
+                                    socket.emit('detectiveMiss',detectivePlayerName,selectedPlayerID,allCards)
+                                }else{
+                                    socket.to(roomName).emit('detectiveSuccess',detectivePlayerName,criminalPlayerID,allCards)
+                                    socket.emit('detectiveSuccess',detectivePlayerName,criminalPlayerID,allCards)
+                                }
+                        }
+                        
+                    }else{
+                        socket.to(roomName).emit('detectiveMiss',detectivePlayerName,selectedPlayerID,allCards)
+                        socket.emit('detectiveMiss',detectivePlayerName,selectedPlayerID,allCards)
+                    }
+                }
+            )
+
+
+            
+
+        }
+
+        detectiveCalc()
+    })
+
+    socket.on('plan',(cardID,planPlayerName) => {
+
+        const planCalc = async() => {
+
+            await connection.query(
+                `UPDATE ?? SET cardName='empty' WHERE id=?`,
+                [cardTableName,cardID],
+                (error,results) => {
+                }
+            )
+            
+            await connection.query(
+                'SELECT * FROM ??',
+                [cardTableName],
+                (error,results) => {
+                    socket.to(roomName).emit('planComp',results,planPlayerName);
+                    socket.emit('planComp',results,planPlayerName);
+                }
+            )
+        }
+
+        planCalc()
     })
     
     socket.on('disconnect',(event)=>{

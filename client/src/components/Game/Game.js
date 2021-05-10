@@ -9,6 +9,8 @@ import Modal from './Modal/Modal';
 
 import backside from './cards/backside.svg';
 
+import './style.css';
+
 let socket;
 
 const Game = ({location}) => {
@@ -24,12 +26,15 @@ const Game = ({location}) => {
     //const ENDPOINT='https://e0f956dc573149fcb26e0a1aecf31d9e.vfs.cloud9.ap-northeast-1.amazonaws.com:8081';
     const ENDPOINT='localhost:8081';
     const [turnNum,setTurnNum] = useState(1);
-    const [turnState, setTurnState] = useState();
+    // const [turnState, setTurnState] = useState();
     const [modal,setModal] = useState();
     const [message,setMessage] = useState([]);
+    const [turnState,setTurnState] = useState();
+    const [planState,setPlanState] = useState([]);
     
     let myCardsArr = [];
-    let membersArr = []
+    let membersArr = [];
+    
     
     useEffect(()=>{
         const { userName,roomName,builder } = queryString.parse(location.search);
@@ -49,6 +54,8 @@ const Game = ({location}) => {
             console.log('cards & queryResults');
             console.log(cards);
             console.log(member);
+            window.sessionStorage.removeItem(['planState1'])
+            window.sessionStorage.removeItem(['planState2'])
             
             let backArr = [];
             
@@ -74,21 +81,22 @@ const Game = ({location}) => {
             
             let firstPlayer;
             
-             setMyCards(<MyCards players={member} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} rumorFunc={rumorFunc} discovererFunc={discovererFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc}/>)
+             setMyCards(<MyCards players={member} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} rumorFunc={rumorFunc} discovererFunc={discovererFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc}/>)
             
             myCardsArr.map((val) => {
                 if(val.cardName === 'discoverer'){
                     firstPlayer = member.find((players)=>{
                             return (players.userName === userName);
                     })
-                    setTurnState(firstPlayer);
+                    
                     setModal(<Modal>あなたの番です</Modal>);
+                    setTurnState(userName);
                 }
             })
             
+            console.log(turnState);
             
-            
-            socket.emit('loadComp',userName,roomName,builder);
+            socket.emit('loadComp',userName,roomName,builder,turnState);
             
         })
         
@@ -105,27 +113,54 @@ const Game = ({location}) => {
                      }
             
                 })
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc}/>)
             setTurnNum(turnNum + 1);
             setMessage([...message,<p key={0}>{alibiName}がアリバイを使用しました。</p>]);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
+
+            let alibiID;
+
+            membersArr.map((players) => {
+                if(players.userName === alibiName){
+                 alibiID = players.id
+                 }
+        
+            })
+
+            switch(alibiID){
+                case 1:
+                    setTurnState(membersArr[1].userName);
+                    break;
+                case 2:
+                    setTurnState(membersArr[2].userName);
+                    break;
+                case 3:
+                    setTurnState(membersArr[0].userName);
+                    break;
+            }
+
+            console.log('planState1 is')
+            console.log(window.sessionStorage.getItem(['planState1']));
+            console.log('planState2 is')
+            console.log(window.sessionStorage.getItem(['planState2']));
+
         })
         
         
         
         const rumorFunc = (cardID) => {
             console.log('rumor');
-            socket.emit('rumor',cardID);
+            socket.emit('rumor',cardID,userName);
         }
         
-        socket.on('rumorComp',(cards,first,second,third) => {
+        socket.on('rumorComp',(cards,first,second,third,rumorPlayer) => {
             membersArr.map((players) => {
                     if(players.userName === userName){
                      myCardsArr = cards.slice(players.id*4-4,players.id*4);
                      }
             
                 })
-                setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc}/>)
+                setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc}/>)
                 setTurnNum(turnNum + 1);
                 
                 console.log(first);
@@ -135,25 +170,25 @@ const Game = ({location}) => {
                 console.log(membersArr)
                 
                 membersArr.map((players) => {
-                    let rumorResults;
+                    let rumorResults = [<p key={0}>{rumorPlayer}が噂を使いました。</p>];
                     if(players.userName === userName){
                         console.log(players.id);
                         
                             if(players.id === 1){
                                 console.log('case1');
-                                rumorResults = [membersArr[1].userName+'から'+second.cardName+'をもらいました。',membersArr[2].userName+'に'+first.cardName+'を渡しました。'];
+                                rumorResults.push(<p key={1}>{membersArr[1].userName}から{second.cardName}をもらいました。{membersArr[2].userName}に{first.cardName}を渡しました。</p>);
                                 console.log(rumorResults);
                                 let newMessage = [...message,rumorResults];
                                 setMessage(newMessage);
                             }else if(players.id === 2){
                                 console.log('case2');
-                                rumorResults = [membersArr[2].userName+'から'+third.cardName+'をもらいました。',membersArr[0].userName+'に'+second.cardName+'を渡しました。'];
+                                rumorResults.push(<p key={1}>{membersArr[2].userName}から{third.cardName}をもらいました。{membersArr[0].userName}に{second.cardName}を渡しました。</p>);
                                 console.log(rumorResults);
                                 let newMessage = [...message,rumorResults];
                                 setMessage(newMessage);
                             }else if(players.id === 3){
                                 console.log('case3');
-                                rumorResults = [membersArr[0].userName+'から'+first.cardName+'をもらいました。',membersArr[1].userName+'に'+third.cardName+'を渡しました。'];
+                                rumorResults.push(<p key={1}>{membersArr[0].userName}から{first.cardName}をもらいました。{membersArr[1].userName}に{third.cardName}を渡しました。</p>);
                                 console.log(rumorResults);
                                 let newMessage = [...message,rumorResults];
                                 setMessage(newMessage);
@@ -164,12 +199,33 @@ const Game = ({location}) => {
                 })
                 
             setMemberData(<Backs cards={cards} members={membersArr}/>); 
+
+            let rumorID;
+
+            membersArr.map((players) => {
+                if(players.userName === rumorPlayer){
+                 rumorID = players.id
+                 }
+        
+            })
+
+            switch(rumorID){
+                case 1:
+                    setTurnState(membersArr[1].userName);
+                    break;
+                case 2:
+                    setTurnState(membersArr[2].userName);
+                    break;
+                case 3:
+                    setTurnState(membersArr[0].userName);
+                    break;
+            }
                 
         })
         
         const discovererFunc = (cardID) => {
                 console.log(cardID);
-                socket.emit('discoverer',userName);
+                socket.emit('discoverer',userName);       
         }
             
         socket.on('discovererComp', (cards,discovererName) => {
@@ -184,14 +240,40 @@ const Game = ({location}) => {
                      }
             
                 })
+
+                let discovererID;
+
+                membersArr.map((player) => {
+                    if(player.userName === discovererName){
+                        discovererID = player.id;
+                    }
+                })
+
                 
                 console.log(myCardsArr);
-                setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc}/>)
+                setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc}/>)
                 setTurnNum(turnNum + 1);
                 console.log(turnNum);
+                console.log(discovererID);
                 
                 setMessage([...message,<p>{discovererName}が第一発見者です。</p>]);
                 setMemberData(<Backs cards={cards} members={membersArr}/>);
+
+                switch(discovererID){
+                    case 1:
+                        setTurnState(membersArr[1].userName);
+                        break;
+                    case 2:
+                        setTurnState(membersArr[2].userName);
+                        break;
+                    case 3:
+                        setTurnState(membersArr[0].userName);
+                        break;
+                }
+
+                console.log(turnState);
+
+                
             })
             
             
@@ -272,10 +354,31 @@ const Game = ({location}) => {
                      }
                 })
                 
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
             setTurnNum(turnNum + 1);
             setMessage([...message,<p key={0}>{originPlayer}が{opponentPlayer}と取引をしました。</p>]);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
+
+            let dealingID;
+
+            membersArr.map((players) => {
+                if(players.userName === originPlayer){
+                 dealingID = players.id
+                 }
+        
+            })
+
+            switch(dealingID){
+                case 1:
+                    setTurnState(membersArr[1].userName);
+                    break;
+                case 2:
+                    setTurnState(membersArr[2].userName);
+                    break;
+                case 3:
+                    setTurnState(membersArr[0].userName);
+                    break;
+            }
             
         })
         
@@ -326,11 +429,11 @@ const Game = ({location}) => {
                 })
                 
                 console.log(memberID);
-                socket.emit('manipulationSelected',cardID,userName,memberID);
+                socket.emit('manipulationSelected',cardID,userName,memberID,manipulationName);
                 setMessage([...message,<p>他のプレイヤーを待っています。</p>])
             }
                 
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
             setTurnNum(turnNum + 1);
             setMessage([...message,manipulationMessage]);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
@@ -338,7 +441,10 @@ const Game = ({location}) => {
         
         
         
-        socket.on('manipulationComp',(cards) => {
+        socket.on('manipulationComp',(cards,manipulationCardsName,manipulationPlayer) => {
+
+            console.log(manipulationCardsName);
+
             membersArr.map((players) => {
                     if(players.userName === userName){
                      myCardsArr = cards.slice(players.id*4-4,players.id*4);
@@ -350,27 +456,44 @@ const Game = ({location}) => {
             membersArr.map((players) => {
                     if(players.userName === userName){
                         if(players.id === 1){
-                            manipulationMessage.push(<p key={1}>{membersArr[2].userName}に選んだカードを渡しました。</p>)
+                            manipulationMessage.push(<p key={1}>{membersArr[2].userName}に{manipulationCardsName[0]}を渡しました。</p>)
+                            manipulationMessage.push(<p key={2}>{membersArr[1].userName}から{manipulationCardsName[1]}を受け取りました。</p>)
+                        }else if(players.id === 2){
+                            manipulationMessage.push(<p key={1}>{membersArr[0].userName}に{manipulationCardsName[1]}を渡しました。</p>)
+                            manipulationMessage.push(<p key={2}>{membersArr[2].userName}から{manipulationCardsName[2]}を受け取りました。</p>)
                         }else{
-                            manipulationMessage.push(<p key={1}>{membersArr[players.id-2].userName}に選んだカードを渡しました。</p>)
+                            manipulationMessage.push(<p key={1}>{membersArr[1].userName}に{manipulationCardsName[2]}を渡しました。</p>)
+                            manipulationMessage.push(<p key={2}>{membersArr[0].userName}から{manipulationCardsName[0]}を受け取りました。</p>)
                         }
                     }
             })
 
-            membersArr.map((players) => {
-                if(players.userName === userName){
-                    if(players.id === 3){
-                        manipulationMessage.push(<p key={1}>{membersArr[0].userName}からカードを受け取りました。</p>)
-                    }else{
-                        manipulationMessage.push(<p key={2}>{membersArr[players.id].userName}からカードを受け取りました。</p>)
-                    }
-                }
-        })
                 
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
             setTurnNum(turnNum + 1);
             setMessage([...message,manipulationMessage]);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
+
+            let manipulationID;
+
+            membersArr.map((players) => {
+                if(players.userName === manipulationPlayer){
+                 manipulationID = players.id
+                 }
+        
+            })
+
+            switch(manipulationID){
+                case 1:
+                    setTurnState(membersArr[1].userName);
+                    break;
+                case 2:
+                    setTurnState(membersArr[2].userName);
+                    break;
+                case 3:
+                    setTurnState(membersArr[0].userName);
+                    break;
+            }
         })
         
         const dogFunc = (cardID) => {
@@ -483,10 +606,31 @@ const Game = ({location}) => {
                  }
             })
 
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
             setTurnNum(turnNum + 1);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
             setMessage([...message,dogCompMessage]);
+
+            let dogID;
+
+            membersArr.map((players) => {
+                if(players.userName === dogUserName){
+                 dogID = players.id
+                 }
+        
+            })
+
+            switch(dogID){
+                case 1:
+                    setTurnState(membersArr[1].userName);
+                    break;
+                case 2:
+                    setTurnState(membersArr[2].userName);
+                    break;
+                case 3:
+                    setTurnState(membersArr[0].userName);
+                    break;
+            }
         })
 
         const witnessFunc = (cardID) => {
@@ -545,9 +689,30 @@ const Game = ({location}) => {
             })
 
             setMessage([...message,<p key={0}>{selectedPlayerName}は以下のカードを持っています。</p>,witnessCompSelfMessage]);
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
             setTurnNum(turnNum + 1);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
+
+            let witnessID;
+
+            membersArr.map((players) => {
+                if(players.userName === witnessPlayerName){
+                 witnessID = players.id
+                 }
+        
+            })
+
+            switch(witnessID){
+                case 1:
+                    setTurnState(membersArr[1].userName);
+                    break;
+                case 2:
+                    setTurnState(membersArr[2].userName);
+                    break;
+                case 3:
+                    setTurnState(membersArr[0].userName);
+                    break;
+            }
 
         })
 
@@ -567,9 +732,30 @@ const Game = ({location}) => {
             })
 
             setMessage([...message,witnessCompMessage]);
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
             setTurnNum(turnNum + 1);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
+
+            let witnessID;
+
+            membersArr.map((players) => {
+                if(players.userName === wintessPlayerName){
+                 witnessID = players.id
+                 }
+        
+            })
+
+            switch(witnessID){
+                case 1:
+                    setTurnState(membersArr[1].userName);
+                    break;
+                case 2:
+                    setTurnState(membersArr[2].userName);
+                    break;
+                case 3:
+                    setTurnState(membersArr[0].userName);
+                    break;
+            }
 
         })
 
@@ -587,9 +773,35 @@ const Game = ({location}) => {
             })
 
             setMessage([...message,normalMessage]);
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
             setTurnNum(turnNum + 1);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
+
+            let normalID;
+
+            membersArr.map((players) => {
+                if(players.userName === normalPlayerName){
+                 normalID = players.id
+                 }
+        
+            })
+
+            switch(normalID){
+                case 1:
+                    setTurnState(membersArr[1].userName);
+                    break;
+                case 2:
+                    setTurnState(membersArr[2].userName);
+                    break;
+                case 3:
+                    setTurnState(membersArr[0].userName);
+                    break;
+            }
+
+            console.log('planState1 is')
+            console.log(window.sessionStorage.getItem(['planState1']));
+            console.log('planState2 is')
+            console.log(window.sessionStorage.getItem(['planState2']));
         })
 
         const boyFunc = (cardID) => {
@@ -620,9 +832,30 @@ const Game = ({location}) => {
             })
 
             setMessage([...message,<p>{criminalOwner}が「犯人」を持っています。</p>]);
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
             setTurnNum(turnNum + 1);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
+
+            let boyID;
+
+            membersArr.map((players) => {
+                if(players.userName === boyPlayerName){
+                 boyID = players.id
+                 }
+        
+            })
+
+            switch(boyID){
+                case 1:
+                    setTurnState(membersArr[1].userName);
+                    break;
+                case 2:
+                    setTurnState(membersArr[2].userName);
+                    break;
+                case 3:
+                    setTurnState(membersArr[0].userName);
+                    break;
+            }
         })
 
         socket.on('boyCompOther',(cards,boyPlayerName) => {
@@ -634,9 +867,133 @@ const Game = ({location}) => {
             })
 
             setMessage([...message,<p key={0}>{boyPlayerName}が「少年」を使い、「犯人」の持ち主を知りました。</p>]);
-            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc}/>)
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
             setTurnNum(turnNum + 1);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
+
+            let boyID;
+
+            membersArr.map((players) => {
+                if(players.userName === boyPlayerName){
+                 boyID = players.id
+                 }
+        
+            })
+
+            switch(boyID){
+                case 1:
+                    setTurnState(membersArr[1].userName);
+                    break;
+                case 2:
+                    setTurnState(membersArr[2].userName);
+                    break;
+                case 3:
+                    setTurnState(membersArr[0].userName);
+                    break;
+            }
+
+        })
+
+        const detectiveFunc = (cardID) => {
+            let detectiveMessage = [<p>「犯人」を持っている人を以下から選択</p>]
+            membersArr.map((player,i) => {
+                if(player.userName !== userName){
+                    detectiveMessage.push(<p key={i} style={{cursor:'pointer'}} onClick={() => {detectiveSelect(player.id)}}>{player.userName}</p>)
+                }
+            })
+
+            const detectiveSelect = (selectedPlayerID) => {
+                socket.emit('detective',cardID,selectedPlayerID,userName)
+            }
+
+            setMessage([...message,detectiveMessage]);
+        }
+
+        socket.on('detectiveSuccess',(detectivePlayerName,criminalID) => {
+            console.log('winner:'+detectivePlayerName)
+        })
+
+        socket.on('detectiveMiss',(detectivePlayerName,selectedPlayerID,cards) => {
+            console.log('detectiveMiss')
+            membersArr.map((players) => {
+                if(players.userName === userName){
+                 myCardsArr = cards.slice(players.id*4-4,players.id*4);
+                 }
+            })
+
+            let selectedPlayer = membersArr.find((v) => v.id === selectedPlayerID);
+            let selectedPlayerName = selectedPlayer.userName;
+            
+            setMessage([...message,<p key={0}>{detectivePlayerName}が「探偵」を使い、{selectedPlayerName}を犯人だと疑いましたが、失敗しました。</p>]);
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
+            setTurnNum(turnNum + 1);
+            setMemberData(<Backs cards={cards} members={membersArr}/>);
+
+            let detectiveID;
+
+            membersArr.map((players) => {
+                if(players.userName === detectivePlayerName){
+                 detectiveID = players.id
+                 }
+        
+            })
+
+            switch(detectiveID){
+                case 1:
+                    setTurnState(membersArr[1].userName);
+                    break;
+                case 2:
+                    setTurnState(membersArr[2].userName);
+                    break;
+                case 3:
+                    setTurnState(membersArr[0].userName);
+                    break;
+            }
+        })
+
+        const planFunc = (cardID) => {
+            socket.emit('plan',cardID,userName)
+        }
+
+        socket.on('planComp',(cards,planPlayerName) => {
+
+            if(sessionStorage.getItem(['planState1']) === null && sessionStorage.getItem(['planState2']) === null){
+                window.sessionStorage.setItem(['planState1'],[planPlayerName])
+            }else if(sessionStorage.getItem(['planState2']) === null){
+                window.sessionStorage.setItem(['planState2'],[planPlayerName])
+            }else{}
+
+            setMessage([...message,<p key={0}>{planPlayerName}が「たくらみ」を使い、犯人の見方になりました。</p>]);
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc}/>)
+            setTurnNum(turnNum + 1);
+            setMemberData(<Backs cards={cards} members={membersArr}/>);
+
+            let planID;
+
+            membersArr.map((players) => {
+                if(players.userName === planPlayerName){
+                 planID = players.id
+                 }
+        
+            })
+
+            switch(planID){
+                case 1:
+                    setTurnState(membersArr[1].userName);
+                    break;
+                case 2:
+                    setTurnState(membersArr[2].userName);
+                    break;
+                case 3:
+                    setTurnState(membersArr[0].userName);
+                    break;
+            }
+
+            console.log('planState1 is')
+            console.log(window.sessionStorage.getItem(['planState1']));
+            console.log('planState2 is')
+            console.log(window.sessionStorage.getItem(['planState2']));
+
         })
         
     },[])
@@ -652,7 +1009,8 @@ const Game = ({location}) => {
                 )
     })
     
-    
+    if(turnState === userName){
+
     return(
         <div className="container-fluid">
             <div className="card">
@@ -685,6 +1043,45 @@ const Game = ({location}) => {
             {modal}
         </div>
         )
+
+    }else{
+        return(
+            <div className="container-fluid">
+                <div className="card">
+                    <p>commentary</p>
+                    <div className='row pt-2 overflow-scroll' style={{height:'200px'}}>
+                        {gameMessage}
+                    </div>
+                </div>
+                
+                <div className="row">
+                
+                    <div className="col-md-6">
+                        <div className="card">
+                            <p>ターン:<span>{turnNum}</span>/4</p>
+                            {memberData}
+                            {console.log('rendering')}
+                        </div>
+                    </div>
+                    
+                    <div className="col-md-6">
+                        <div className="card">
+                            <div className="cardscover">
+                            </div>
+                            <div className="mycards">
+                                <p>あなたのカード</p>{myCards}
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                
+                
+                {modal}
+            </div>
+            )
+    
+    }
 }
 
 export default Game;

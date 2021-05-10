@@ -77,7 +77,7 @@ const Ready = ({location}) => {
     
     
     return(
-        <div>
+        <div className="container-fluid">
             <h1>犯人は踊る 待機室</h1>
             {members.map((value)=>{
                 return(
