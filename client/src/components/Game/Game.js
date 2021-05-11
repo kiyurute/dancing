@@ -259,21 +259,24 @@ const Game = ({location}) => {
                 console.log(discovererID);
                 
                 setMessage([...message,discovererName+'が第一発見者です']);
-                setMemberData(<Backs cards={cards} members={membersArr}/>);
 
                 switch(discovererID){
                     case 1:
-                        setTurnState(membersArr[1].userName);
+                        window.sessionStorage.setItem(['turnState'],[membersArr[1].userName]);
+                        setTurnState(window.sessionStorage.getItem(['turnState']));
                         break;
                     case 2:
-                        setTurnState(membersArr[2].userName);
+                        window.sessionStorage.setItem(['turnState'],[membersArr[2].userName]);
+                        setTurnState(window.sessionStorage.getItem(['turnState']));
                         break;
                     case 3:
-                        setTurnState(membersArr[0].userName);
+                        window.sessionStorage.setItem(['turnState'],[membersArr[0].userName]);
+                        setTurnState(window.sessionStorage.getItem(['turnState']));
                         break;
                 }
 
                 console.log(turnState);
+                setMemberData(<Backs cards={cards} members={membersArr} currentPlayer={turnState}/>);
 
                 
             })
@@ -733,7 +736,7 @@ const Game = ({location}) => {
                  }
             })
 
-            setMessage({...message,witnessCompMessage});
+            setMessage([...message,witnessCompMessage]);
             setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
             setMemberData(<Backs cards={cards} members={membersArr}/>);
@@ -912,7 +915,8 @@ const Game = ({location}) => {
         }
 
         socket.on('detectiveSuccess',(detectivePlayerName,criminalID) => {
-            console.log('winner:'+detectivePlayerName)
+            console.log('winner:'+detectivePlayerName);
+            setTurnState('gameFin');
         })
 
         socket.on('detectiveMiss',(detectivePlayerName,selectedPlayerID,cards) => {
@@ -1009,6 +1013,7 @@ const Game = ({location}) => {
         socket.on('criminalSuccess',(criminalPlayerName) => {
             console.log('winner:'+criminalPlayerName)
         })
+
         
     },[])
     
@@ -1022,22 +1027,64 @@ const Game = ({location}) => {
     //             val
     //             )
     // })
-    
-    if(turnState === userName){
+
+    if(turnState === 'gameFin'){
+        
+        return(
+            <>
+            <div className="container-fluid">
+                <div className="row header fixed-top">
+                            <div className="col-12 pl-50">
+                                <p className="player-name pl-5">  プレイヤー名：{userName}</p>
+                            </div>
+                </div>
+                <div className="row header">
+                            <div className="col-12 p-0">
+                                <p className="player-name">プレイヤー名：{userName}</p>
+                            </div>
+                    </div>
+                <div className="row">
+                    <div className="col-12 p-3">
+                        <div className="card p-3 shadow-sm">
+                            <p>司会</p>
+                            <div className='row pt-2 overflow-scroll' style={{height:'200px'}}>
+                                {message.map((message) => {
+
+                                    return (
+                                        <div>
+                                            <p>{message}</p>
+                                        </div>
+                                    )
+
+                                })}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </>
+        )
+
+    }else if(turnState === userName){
 
     return(
         <>
         {modal}
         <div className="container-fluid">
+            <div className="row header fixed-top">
+                        <div className="col-12">
+                            <p className="player-name pl-5">  プレイヤー名：{userName}</p>
+                        </div>
+            </div>
             <div className="row header">
                         <div className="col-12 p-0">
                             <p className="player-name">プレイヤー名：{userName}</p>
                         </div>
-            </div>
+                </div>
             <div className="row">
-                <div className="col-12 pt-3 pl-3 pr-3">
+                <div className="col-12 p-3">
                     <div className="card p-3 shadow-sm">
-                        <p>実況</p>
+                        <p>司会</p>
                         <div className='row pt-2 overflow-scroll' style={{height:'200px'}}>
                             {message.map((message) => {
 
@@ -1055,14 +1102,14 @@ const Game = ({location}) => {
             
             <div className="row">
             
-                <div className="col-md-6 pt-3 pl-3">
+                <div className="col-md-6 p-3">
                     <div className="card p-3 shadow-sm">
                         <p>みんなのカード</p>
                         {memberData}
                     </div>
                 </div>
                 
-                <div className="col-md-6 pt-3 pr-3">
+                <div className="col-md-6 p-3">
                     <div className="card shadow-sm">
                         <div className="mycard-wrapper">
                             <div className="mycards p-3">
@@ -1110,15 +1157,20 @@ const Game = ({location}) => {
             {modal}
             
             <div className="container-fluid">
+                <div className="row header fixed-top">
+                        <div className="col-12 pl-5">
+                            <p className="player-name pl-5">  プレイヤー名：{userName}</p>
+                        </div>
+                </div>
                 <div className="row header">
                         <div className="col-12 p-0">
                             <p className="player-name">プレイヤー名：{userName}</p>
                         </div>
                 </div>
                 <div className='row'>
-                    <div className='col-12 pt-3 pl-3 pr-3'>
+                    <div className='col-12 p-3'>
                         <div className="card p-3 shadow-sm shadow-sm">
-                            <p>実況</p>
+                            <p>司会</p>
                             <div className='row pt-2 overflow-scroll' style={{height:'200px'}}>
                             {message.map((message) => {
 
@@ -1136,14 +1188,14 @@ const Game = ({location}) => {
                 
                 <div className="row">
                 
-                    <div className="col-md-6 pt-3 pl-3">
+                    <div className="col-md-6 p-3">
                         <div className="card p-3 shadow-sm">
                             <p>みんなのカード</p>
                             {memberData}
                         </div>
                     </div>
                     
-                    <div className="col-md-6 pt-3 pr-3">
+                    <div className="col-md-6 p-3">
                         <div className="card shadow-sm">
                             <div className="mycard-wrapper">
                                 <div className="cardscover">

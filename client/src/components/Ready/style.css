@@ -1,0 +1,7 @@
+html{
+    color:rgba(241, 238, 244, 1.0);
+}
+.btn-primary{
+    background-color: rgba(139, 126, 152, 1.0) !important;
+    border-color: rgba(139, 126, 152, 1.0) !important;
+}

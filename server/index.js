@@ -28,6 +28,7 @@ connection.connect(function(err) {
 app.use(router);
 
 const SetCards = require('./SetCards');
+const { table } = require('console');
 
 function createTable(tableName,userName,builder){
     console.log('in the createTable');
@@ -67,7 +68,7 @@ function checkMemberDuplicate(tableName,userName,builder){
 
 function registerMember(tableName,userName,builder){
     console.log('in the registerMamber');
-    
+    let duplicate;
    
     if(builder === 'true'){
         builder = 1;
@@ -75,6 +76,17 @@ function registerMember(tableName,userName,builder){
         builder = 0;
     }
     return new Promise((resolve,reject) => {
+        connection.query(
+            'SELECT * FROM ??',
+            [tableName],
+            (error,results) => {
+                duplicate = results.find((member) => member.userName === userName);
+                if(duplicate){
+                    
+                }
+            }
+        )
+
         connection.query(
             'INSERT INTO ?? VALUE (0,?,?)',
             [tableName, userName, builder],
@@ -133,19 +145,45 @@ io.on(('connect'),(socket)=>{
         roomName = newRoomName;
         tableName = 'member_list_of_'+roomName;
         socket.join(roomName);
+        console.log(io.sockets.adapter.rooms[roomName]);
         
         if(builder === 'true'){
-                
+            builder = 1;
             createTable(tableName,userName,builder)
-                .then(registerMember(tableName,userName,builder))
-                .then(connection.query(
-                    'SELECT * FROM ??',
-                    [tableName],
-                    (error,results) => {
-                        socket.to(roomName).emit('getReady',results);
-                        socket.emit('getReady',results);
-                    }
-                ));
+                .then(
+
+                    connection.query(
+                        'SELECT * FROM ??',
+                        [tableName],
+                        (error,results) => {
+                            duplicate = results.find((member) => member.userName === userName);
+                            if(duplicate){
+                                connection.query(
+                                    'SELECT * FROM ??',
+                                        [tableName],
+                                        (error,results) => {
+                                            socket.to(roomName).emit('getReady',results);
+                                            socket.emit('getReady',results);
+                                        }
+                                )
+                            }else{
+                                connection.query(
+                                    'INSERT INTO ?? VALUE (0,?,?)',
+                                    [tableName, userName, builder],
+                                    (error,results)=>{
+                                        connection.query(
+                                            'SELECT * FROM ??',
+                                            [tableName],
+                                            (error,results) => {
+                                                socket.to(roomName).emit('getReady',results);
+                                                socket.emit('getReady',results);
+                                            }
+                                        )
+                                    })
+                            }
+                        }
+                    )
+                )
             
         }else{
             let nameDuplicate;
@@ -174,19 +212,19 @@ io.on(('connect'),(socket)=>{
                             socket.to(roomName).emit('getReady',results);
                             socket.emit('getReady',results);
                         }else{        
-                        connection.query(
-                            'INSERT INTO ?? VALUE (0,?,?)',
-                            [tableName, userName, builder],
-                            (error,results) => {
-                                if(error){console.log(error)}else{console.log('register complete')}
-                                connection.query(
-                                    'SELECT * FROM ??',
-                                    [tableName],
-                                    (error,results) => {
-                                        socket.to(roomName).emit('getReady',results);
-                                        socket.emit('getReady',results);
-                                    })
-                            })
+                            connection.query(
+                                'INSERT INTO ?? VALUE (0,?,?)',
+                                [tableName, userName, builder],
+                                (error,results) => {
+                                    if(error){console.log(error)}else{console.log('register complete')}
+                                    connection.query(
+                                        'SELECT * FROM ??',
+                                        [tableName],
+                                        (error,results) => {
+                                            socket.to(roomName).emit('getReady',results);
+                                            socket.emit('getReady',results);
+                                        })
+                                })
                         }            
                                     
                 }
@@ -950,6 +988,42 @@ io.on(('connect'),(socket)=>{
     socket.on('disconnect',(event)=>{
         console.log('user left');
         console.log(gameRoomName);
+        let room = io.sockets.adapter.rooms[roomName];
+
+        if(room === undefined){
+
+            const checkRoomExist = () => {
+                if(room === undefined){
+                    dropTables();
+                }else{
+
+                }
+            }
+
+            setTimeout(checkRoomExist,2000);
+
+            const dropTables = async() => {
+
+                await connection.query(
+                    'DROP TABLE ??',
+                    [tableName],
+                    (error,results) => {}
+                )
+
+                await connection.query(
+                    'DROP TABLE ??',
+                    [msgTableName],
+                    (error,results) => {}
+                )
+
+                await connection.query(
+                    'DROP TABLE ??',
+                    [cardTableName],
+                    (error,results) => {}
+                )
+            }
+            
+        }else{}
         
     })
 

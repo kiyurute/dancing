@@ -51,7 +51,15 @@ const Backs = (props) => {
                     )
         }
     })
-    
+
+
+    const changeFontColor = (memberName,currentTurnMemberName) => {
+        if(memberName === currentTurnMemberName){
+            return (<p className='mb-0' style={{color:'rgba(139, 126, 152, 1.0)'}}>{memberName}</p>)
+        }else{
+            return (<p className='mb-0'>{memberName}</p>)
+        }
+    }
     
     
     
@@ -59,17 +67,18 @@ const Backs = (props) => {
         <div>
         
           <div className="row pb-3">
-                <p className='mb-0'>{props.members[0].userName}</p>
+                {changeFontColor(props.members[0].userName,props.currentPlayer)}
+                {console.log(props.currentPlayer)}
                 {firstCardView}
            </div>
            
            <div className="row pb-3">
-                <p className='mb-0'>{props.members[1].userName}</p>
+                {changeFontColor(props.members[1].userName,props.currentPlayer)}
                 {secondCardView}
            </div>
            
            <div className="row pb-3">
-                <p className='mb-0'>{props.members[2].userName}</p>
+                {changeFontColor(props.members[2].userName,props.currentPlayer)}
                 {thirdCardView}
            </div>
          </div>

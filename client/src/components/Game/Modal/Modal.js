@@ -2,6 +2,8 @@ import React, {useState, useEffect, useRef} from 'react';
 
 import './ModalStyle.css';
 
+import CloseIcon from './SVG/close.svg';
+
 const Modal = (props) => {
   
   
@@ -31,7 +33,7 @@ const Modal = (props) => {
     <div>
       <div className={`modal__overlay ${modal && "is-opened"}`}  onClick={e=>{if(modalRef.current === e.target) close()}} ref={modalRef}>
         <div className="modal__box">
-          <button className="modal__closeBtn" onClick={() => close()}>×</button>
+          <div className="modal__closeBtn p-1" onClick={() => close()} style={{width:'24px'}}><img src={CloseIcon}/></div>
           <div>{props.children}</div>
         </div>
       </div>
