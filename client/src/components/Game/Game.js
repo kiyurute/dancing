@@ -35,6 +35,7 @@ const Game = ({location}) => {
     const [message,setMessage] = useState([]);
     const [turnState,setTurnState] = useState();
     const [planState,setPlanState] = useState([]);
+    const [winner,setWinner] = useState([]);
     
     let myCardsArr = [];
     let membersArr = [];
@@ -61,6 +62,7 @@ const Game = ({location}) => {
             console.log(member);
             window.sessionStorage.removeItem(['planState1'])
             window.sessionStorage.removeItem(['planState2'])
+            window.sessionStorage.removeItem('turnState');
             
             let backArr = [];
             
@@ -80,7 +82,6 @@ const Game = ({location}) => {
             //     backArr.push(<Backs name={val.userName} cards={cards} key={i}/>)
             // })
             
-            setMemberData(<Backs cards={cards} members={member}/>);
             
             console.log(myCardsArr);
             
@@ -94,12 +95,20 @@ const Game = ({location}) => {
                             return (players.userName === userName);
                     })
                     
+                    window.sessionStorage.setItem('turnState',firstPlayer.userName);
+
                     setModal(<Modal>あなたの番です。「第一発見者」を出して下さい。</Modal>);
                     setTurnState(userName);
                 }
             })
+
+            setMemberData(<Backs cards={cards} members={member} currentPlayer={turnState}/>);
             
-            console.log(turnState);
+            console.log('firstPlayer');
+
+            console.log(firstPlayer);
+
+            console.log(window.sessionStorage.getItem('turnState'));
             
             socket.emit('loadComp',userName,roomName,builder,turnState);
             
@@ -123,7 +132,6 @@ const Game = ({location}) => {
             setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
             setMessage([...message,alibiName+'がアリバイを使用しました。']);
-            setMemberData(<Backs cards={cards} members={membersArr}/>);
 
             let alibiID;
 
@@ -136,15 +144,20 @@ const Game = ({location}) => {
 
             switch(alibiID){
                 case 1:
+                    window.sessionStorage.setItem('turnState',membersArr[1].userName);
                     setTurnState(membersArr[1].userName);
                     break;
                 case 2:
+                    window.sessionStorage.setItem('turnState',membersArr[2].userName);
                     setTurnState(membersArr[2].userName);
                     break;
                 case 3:
+                    window.sessionStorage.setItem('turnState',membersArr[0].userName);
                     setTurnState(membersArr[0].userName);
                     break;
             }
+
+            setMemberData(<Backs cards={cards} members={membersArr} currentPlayer={turnState}/>);
 
         })
         
@@ -152,7 +165,10 @@ const Game = ({location}) => {
         
         const rumorFunc = (cardID) => {
             console.log('rumor');
-            socket.emit('rumor',cardID,userName);
+            let rumorMemberData = membersArr.find((member) => member.userName === userName);
+            console.log('memberdata is');
+            console.log(rumorMemberData.id)
+            socket.emit('rumor',cardID,userName,rumorMemberData.id);
         }
         
         socket.on('rumorComp',(cards,first,second,third,rumorPlayer) => {
@@ -162,14 +178,37 @@ const Game = ({location}) => {
                      }
             
                 })
-                setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc} criminalFunc={criminalFunc}/>)
-                setTurnNum(turnNum + 1);
+                
                 
                 console.log(first);
                 console.log(second);
                 console.log(third);
                 
                 console.log(membersArr)
+
+                let rumorID;
+
+                membersArr.map((players) => {
+                    if(players.userName === rumorPlayer){
+                     rumorID = players.id
+                     }
+                 
+                })
+
+                switch(rumorID){
+                    case 1:
+                        window.sessionStorage.setItem('turnState',membersArr[1].userName);
+                        setTurnState(membersArr[1].userName);
+                        break;
+                    case 2:
+                        window.sessionStorage.setItem('turnState',membersArr[2].userName);
+                        setTurnState(membersArr[2].userName);
+                        break;
+                    case 3:
+                        window.sessionStorage.setItem('turnState',membersArr[0].userName);
+                        setTurnState(membersArr[0].userName);
+                        break;
+                }
                 
                 membersArr.map((players) => {
                     let rumorResults = [<p key={0}>{rumorPlayer}が噂を使いました。</p>];
@@ -200,29 +239,52 @@ const Game = ({location}) => {
                     }
                 })
                 
-            setMemberData(<Backs cards={cards} members={membersArr}/>); 
 
-            let rumorID;
+                setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc} criminalFunc={criminalFunc}/>)
+                setTurnNum(turnNum + 1);
+                setMemberData(<Backs cards={cards} members={membersArr} currentPlayer={turnState}/>); 
+                
+        })
 
+        socket.on('rumorException',(cards,rumorPlayer) => {
+            console.log('rumorException');
+            
             membersArr.map((players) => {
-                if(players.userName === rumorPlayer){
-                 rumorID = players.id
+                if(players.userName === userName){
+                 myCardsArr = cards.slice(players.id*4-4,players.id*4);
                  }
         
             })
+            setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc}　planFunc={planFunc} criminalFunc={criminalFunc}/>)
+            setTurnNum(turnNum + 1);
 
-            switch(rumorID){
-                case 1:
-                    setTurnState(membersArr[1].userName);
-                    break;
-                case 2:
-                    setTurnState(membersArr[2].userName);
-                    break;
-                case 3:
-                    setTurnState(membersArr[0].userName);
-                    break;
-            }
-                
+            let rumorID;
+
+                membersArr.map((players) => {
+                    if(players.userName === rumorPlayer){
+                     rumorID = players.id
+                     }
+                 
+                })
+
+                switch(rumorID){
+                    case 1:
+                        window.sessionStorage.setItem('turnState',membersArr[1].userName);
+                        setTurnState(membersArr[1].userName);
+                        break;
+                    case 2:
+                        window.sessionStorage.setItem('turnState',membersArr[2].userName);
+                        setTurnState(membersArr[2].userName);
+                        break;
+                    case 3:
+                        window.sessionStorage.setItem('turnState',membersArr[0].userName);
+                        setTurnState(membersArr[0].userName);
+                        break;
+                }
+
+            setMemberData(<Backs cards={cards} members={membersArr} currentPlayer={turnState}/>); 
+            setMessage([...message,rumorPlayer+'が「噂」を使用しました']);
+
         })
         
         const discovererFunc = (cardID) => {
@@ -258,24 +320,27 @@ const Game = ({location}) => {
                 console.log(turnNum);
                 console.log(discovererID);
                 
-                setMessage([...message,discovererName+'が第一発見者です']);
 
                 switch(discovererID){
                     case 1:
                         window.sessionStorage.setItem(['turnState'],[membersArr[1].userName]);
                         setTurnState(window.sessionStorage.getItem(['turnState']));
+                        console.log(window.sessionStorage.setItem['turnState']);
                         break;
                     case 2:
                         window.sessionStorage.setItem(['turnState'],[membersArr[2].userName]);
                         setTurnState(window.sessionStorage.getItem(['turnState']));
+                        console.log(window.sessionStorage.setItem['turnState']);
                         break;
                     case 3:
                         window.sessionStorage.setItem(['turnState'],[membersArr[0].userName]);
                         setTurnState(window.sessionStorage.getItem(['turnState']));
+                        console.log(window.sessionStorage.setItem['turnState']);
                         break;
+                        
                 }
 
-                console.log(turnState);
+                setMessage([...message,discovererName+'が第一発見者です']);
                 setMemberData(<Backs cards={cards} members={membersArr} currentPlayer={turnState}/>);
 
                 
@@ -362,7 +427,6 @@ const Game = ({location}) => {
             setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
             setMessage([...message,<p key={0}>{originPlayer}が{opponentPlayer}と取引をしました。</p>]);
-            setMemberData(<Backs cards={cards} members={membersArr}/>);
 
             let dealingID;
 
@@ -375,15 +439,20 @@ const Game = ({location}) => {
 
             switch(dealingID){
                 case 1:
+                    window.sessionStorage.setItem('turnState',membersArr[1].userName);
                     setTurnState(membersArr[1].userName);
                     break;
                 case 2:
+                    window.sessionStorage.setItem('turnState',membersArr[2].userName);
                     setTurnState(membersArr[2].userName);
                     break;
                 case 3:
+                    window.sessionStorage.setItem('turnState',membersArr[0].userName);
                     setTurnState(membersArr[0].userName);
                     break;
             }
+
+            setMemberData(<Backs cards={cards} members={membersArr}/>);
             
         })
         
@@ -477,7 +546,6 @@ const Game = ({location}) => {
             setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
             setMessage([...message,manipulationMessage]);
-            setMemberData(<Backs cards={cards} members={membersArr}/>);
 
             let manipulationID;
 
@@ -490,15 +558,20 @@ const Game = ({location}) => {
 
             switch(manipulationID){
                 case 1:
+                    window.sessionStorage.setItem('turnState',membersArr[1].userName);
                     setTurnState(membersArr[1].userName);
                     break;
                 case 2:
+                    window.sessionStorage.setItem('turnState',membersArr[2].userName);
                     setTurnState(membersArr[2].userName);
                     break;
                 case 3:
+                    window.sessionStorage.setItem('turnState',membersArr[0].userName);
                     setTurnState(membersArr[0].userName);
                     break;
             }
+
+            setMemberData(<Backs cards={cards} members={membersArr}/>);
         })
         
         const dogFunc = (cardID) => {
@@ -613,7 +686,6 @@ const Game = ({location}) => {
 
             setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
-            setMemberData(<Backs cards={cards} members={membersArr}/>);
             setMessage([...message,dogCompMessage]);
 
             let dogID;
@@ -627,15 +699,20 @@ const Game = ({location}) => {
 
             switch(dogID){
                 case 1:
+                    window.sessionStorage.setItem('turnState',membersArr[1].userName);
                     setTurnState(membersArr[1].userName);
                     break;
                 case 2:
+                    window.sessionStorage.setItem('turnState',membersArr[2].userName);
                     setTurnState(membersArr[2].userName);
                     break;
                 case 3:
+                    window.sessionStorage.setItem('turnState',membersArr[0].userName);
                     setTurnState(membersArr[0].userName);
                     break;
             }
+
+            setMemberData(<Backs cards={cards} members={membersArr}/>);
         })
 
         const witnessFunc = (cardID) => {
@@ -696,7 +773,6 @@ const Game = ({location}) => {
             setMessage([...message,<p key={0}>{selectedPlayerName}は以下のカードを持っています。</p>,witnessCompSelfMessage]);
             setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
-            setMemberData(<Backs cards={cards} members={membersArr}/>);
 
             let witnessID;
 
@@ -709,15 +785,20 @@ const Game = ({location}) => {
 
             switch(witnessID){
                 case 1:
+                    window.sessionStorage.setItem('turnState',membersArr[1].userName);
                     setTurnState(membersArr[1].userName);
                     break;
                 case 2:
+                    window.sessionStorage.setItem('turnState',membersArr[2].userName);
                     setTurnState(membersArr[2].userName);
                     break;
                 case 3:
+                    window.sessionStorage.setItem('turnState',membersArr[0].userName);
                     setTurnState(membersArr[0].userName);
                     break;
             }
+
+            setMemberData(<Backs cards={cards} members={membersArr}/>);
 
         })
 
@@ -739,7 +820,6 @@ const Game = ({location}) => {
             setMessage([...message,witnessCompMessage]);
             setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
-            setMemberData(<Backs cards={cards} members={membersArr}/>);
 
             let witnessID;
 
@@ -752,15 +832,20 @@ const Game = ({location}) => {
 
             switch(witnessID){
                 case 1:
+                    window.sessionStorage.setItem('turnState',membersArr[1].userName);
                     setTurnState(membersArr[1].userName);
                     break;
                 case 2:
+                    window.sessionStorage.setItem('turnState',membersArr[2].userName);
                     setTurnState(membersArr[2].userName);
                     break;
                 case 3:
+                    window.sessionStorage.setItem('turnState',membersArr[0].userName);
                     setTurnState(membersArr[0].userName);
                     break;
             }
+
+            setMemberData(<Backs cards={cards} members={membersArr}/>);
 
         })
 
@@ -780,7 +865,6 @@ const Game = ({location}) => {
             setMessage([...message,normalMessage]);
             setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
-            setMemberData(<Backs cards={cards} members={membersArr}/>);
 
             let normalID;
 
@@ -793,12 +877,15 @@ const Game = ({location}) => {
 
             switch(normalID){
                 case 1:
+                    window.sessionStorage.setItem('turnState',membersArr[1].userName);
                     setTurnState(membersArr[1].userName);
                     break;
                 case 2:
+                    window.sessionStorage.setItem('turnState',membersArr[2].userName);
                     setTurnState(membersArr[2].userName);
                     break;
                 case 3:
+                    window.sessionStorage.setItem('turnState',membersArr[0].userName);
                     setTurnState(membersArr[0].userName);
                     break;
             }
@@ -807,6 +894,8 @@ const Game = ({location}) => {
             console.log(window.sessionStorage.getItem(['planState1']));
             console.log('planState2 is')
             console.log(window.sessionStorage.getItem(['planState2']));
+
+            setMemberData(<Backs cards={cards} members={membersArr}/>);
         })
 
         const boyFunc = (cardID) => {
@@ -839,7 +928,6 @@ const Game = ({location}) => {
             setMessage([...message,<p>{criminalOwner}が「犯人」を持っています。</p>]);
             setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
-            setMemberData(<Backs cards={cards} members={membersArr}/>);
 
             let boyID;
 
@@ -852,15 +940,20 @@ const Game = ({location}) => {
 
             switch(boyID){
                 case 1:
+                    window.sessionStorage.setItem('turnState',membersArr[1].userName);
                     setTurnState(membersArr[1].userName);
                     break;
                 case 2:
+                    window.sessionStorage.setItem('turnState',membersArr[2].userName);
                     setTurnState(membersArr[2].userName);
                     break;
                 case 3:
+                    window.sessionStorage.setItem('turnState',membersArr[0].userName);
                     setTurnState(membersArr[0].userName);
                     break;
             }
+
+            setMemberData(<Backs cards={cards} members={membersArr}/>);
         })
 
         socket.on('boyCompOther',(cards,boyPlayerName) => {
@@ -874,7 +967,6 @@ const Game = ({location}) => {
             setMessage([...message,<p key={0}>{boyPlayerName}が「少年」を使い、「犯人」の持ち主を知りました。</p>]);
             setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
-            setMemberData(<Backs cards={cards} members={membersArr}/>);
 
             let boyID;
 
@@ -887,15 +979,20 @@ const Game = ({location}) => {
 
             switch(boyID){
                 case 1:
+                    window.sessionStorage.setItem('turnState',membersArr[1].userName);
                     setTurnState(membersArr[1].userName);
                     break;
                 case 2:
+                    window.sessionStorage.setItem('turnState',membersArr[2].userName)
                     setTurnState(membersArr[2].userName);
                     break;
                 case 3:
+                    window.sessionStorage.setItem('turnState',membersArr[0].userName)
                     setTurnState(membersArr[0].userName);
                     break;
             }
+
+            setMemberData(<Backs cards={cards} members={membersArr}/>);
 
         })
 
@@ -933,7 +1030,6 @@ const Game = ({location}) => {
             setMessage([...message,<p key={0}>{detectivePlayerName}が「探偵」を使い、{selectedPlayerName}を犯人だと疑いましたが、失敗しました。</p>]);
             setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
-            setMemberData(<Backs cards={cards} members={membersArr}/>);
 
             let detectiveID;
 
@@ -946,15 +1042,20 @@ const Game = ({location}) => {
 
             switch(detectiveID){
                 case 1:
+                    window.sessionStorage.setItem('turnState',membersArr[1].userName)
                     setTurnState(membersArr[1].userName);
                     break;
                 case 2:
+                    window.sessionStorage.setItem('turnState',membersArr[2].userName)
                     setTurnState(membersArr[2].userName);
                     break;
                 case 3:
+                    window.sessionStorage.setItem('turnState',membersArr[0].userName)
                     setTurnState(membersArr[0].userName);
                     break;
             }
+
+            setMemberData(<Backs cards={cards} members={membersArr}/>);
         })
 
         const planFunc = (cardID) => {
@@ -969,10 +1070,15 @@ const Game = ({location}) => {
                 window.sessionStorage.setItem(['planState2'],[planPlayerName])
             }else{}
 
+            membersArr.map((players) => {
+                if(players.userName === userName){
+                 myCardsArr = cards.slice(players.id*4-4,players.id*4);
+                 }
+            })
+
             setMessage([...message,<p key={0}>{planPlayerName}が「たくらみ」を使い、犯人の見方になりました。</p>]);
             setMyCards(<MyCards players={memberData} myCards={myCardsArr} playerName={userName} alibiFunc={alibiFunc} discovererFunc={discovererFunc} rumorFunc={rumorFunc} dealingFunc={dealingFunc} manipulationFunc={manipulationFunc} dogFunc={dogFunc} witnessFunc={witnessFunc} normalFunc={normalFunc} boyFunc={boyFunc} detectiveFunc={detectiveFunc} planFunc={planFunc} criminalFunc={criminalFunc}/>)
             setTurnNum(turnNum + 1);
-            setMemberData(<Backs cards={cards} members={membersArr}/>);
 
             let planID;
 
@@ -985,12 +1091,15 @@ const Game = ({location}) => {
 
             switch(planID){
                 case 1:
+                    window.sessionStorage.setItem('turnState',membersArr[1].userName);
                     setTurnState(membersArr[1].userName);
                     break;
                 case 2:
+                    window.sessionStorage.setItem('turnState',membersArr[2].userName)
                     setTurnState(membersArr[2].userName);
                     break;
                 case 3:
+                    window.sessionStorage.setItem('turnState',membersArr[0].userName)
                     setTurnState(membersArr[0].userName);
                     break;
             }
@@ -999,6 +1108,8 @@ const Game = ({location}) => {
             console.log(window.sessionStorage.getItem(['planState1']));
             console.log('planState2 is')
             console.log(window.sessionStorage.getItem(['planState2']));
+
+            setMemberData(<Backs cards={cards} members={membersArr}/>);
 
         })
 
@@ -1011,7 +1122,11 @@ const Game = ({location}) => {
         })
 
         socket.on('criminalSuccess',(criminalPlayerName) => {
-            console.log('winner:'+criminalPlayerName)
+            console.log('winner:'+criminalPlayerName);
+            window.sessionStorage.setItem('turnState','gameFin');
+            setTurnState('gameFin');
+            setWinner(criminalPlayerName);
+
         })
 
         
@@ -1028,7 +1143,8 @@ const Game = ({location}) => {
     //             )
     // })
 
-    if(turnState === 'gameFin'){
+    // if(turnState === 'gameFin'){
+    if(window.sessionStorage.getItem('turnState') === 'gameFin'){
         
         return(
             <>
@@ -1046,8 +1162,8 @@ const Game = ({location}) => {
                 <div className="row">
                     <div className="col-12 p-3">
                         <div className="card p-3 shadow-sm">
-                            <p>司会</p>
-                            <div className='row pt-2 overflow-scroll' style={{height:'200px'}}>
+                            {/* <p>司会</p>
+                            <div className='row pt-2 overflow-scroll' style={{height:'160px'}}>
                                 {message.map((message) => {
 
                                     return (
@@ -1057,7 +1173,12 @@ const Game = ({location}) => {
                                     )
 
                                 })}
-                            </div>
+                            </div> */}
+
+                            <p>勝者</p>
+                            <p>{winner}</p>
+                            <p>{window.sessionStorage.getItem('planState1')}</p>
+                            <p>{window.sessionStorage.getItem('planState2')}</p>
                         </div>
                     </div>
                 </div>
@@ -1065,7 +1186,7 @@ const Game = ({location}) => {
             </>
         )
 
-    }else if(turnState === userName){
+    }else if(window.sessionStorage.getItem('turnState') === userName){
 
     return(
         <>
@@ -1085,7 +1206,7 @@ const Game = ({location}) => {
                 <div className="col-12 p-3">
                     <div className="card p-3 shadow-sm">
                         <p>司会</p>
-                        <div className='row pt-2 overflow-scroll' style={{height:'200px'}}>
+                        <div className='row pt-2 overflow-scroll' style={{height:'160px'}}>
                             {message.map((message) => {
 
                                 return (
@@ -1101,14 +1222,7 @@ const Game = ({location}) => {
             </div>
             
             <div className="row">
-            
-                <div className="col-md-6 p-3">
-                    <div className="card p-3 shadow-sm">
-                        <p>みんなのカード</p>
-                        {memberData}
-                    </div>
-                </div>
-                
+
                 <div className="col-md-6 p-3">
                     <div className="card shadow-sm">
                         <div className="mycard-wrapper">
@@ -1119,6 +1233,14 @@ const Game = ({location}) => {
                         </div>
                     </div>
                 </div>
+            
+                <div className="col-md-6 p-3">
+                    <div className="card p-3 shadow-sm">
+                        <p>みんなのカード</p>
+                        {memberData}
+                    </div>
+                </div>
+                
                 
             </div>
 
@@ -1171,7 +1293,7 @@ const Game = ({location}) => {
                     <div className='col-12 p-3'>
                         <div className="card p-3 shadow-sm shadow-sm">
                             <p>司会</p>
-                            <div className='row pt-2 overflow-scroll' style={{height:'200px'}}>
+                            <div className='row pt-2 overflow-scroll' style={{height:'160px'}}>
                             {message.map((message) => {
 
                                 return (
@@ -1188,12 +1310,6 @@ const Game = ({location}) => {
                 
                 <div className="row">
                 
-                    <div className="col-md-6 p-3">
-                        <div className="card p-3 shadow-sm">
-                            <p>みんなのカード</p>
-                            {memberData}
-                        </div>
-                    </div>
                     
                     <div className="col-md-6 p-3">
                         <div className="card shadow-sm">
@@ -1207,6 +1323,14 @@ const Game = ({location}) => {
                             </div>
                         </div>
                     </div>
+
+                    <div className="col-md-6 p-3">
+                        <div className="card p-3 shadow-sm">
+                            <p>みんなのカード</p>
+                            {memberData}
+                        </div>
+                    </div>
+
                     
                 </div>
 

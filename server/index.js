@@ -363,7 +363,7 @@ io.on(('connect'),(socket)=>{
     
     
     
-    socket.on('rumor',(cardID,rumorPlayer) => {
+    socket.on('rumor',(cardID,rumorPlayer,rumorID) => {
         console.log('rumor');
         let cards;
         
@@ -393,6 +393,155 @@ io.on(('connect'),(socket)=>{
                         console.log(firstCardSet);
                         console.log(secondCardSet);
                         console.log(thirdCardSet);
+
+                        let noEmpty;
+
+                        if(rumorID === 1){
+                            noEmpty = firstCardSet.find((card) => card.cardName !== 'empty');
+                        }else if(rumorID === 2){
+                            noEmpty = secondCardSet.find((card) => card.cardName !== 'empty');
+                        }else{
+                            noEmpty = thirdCardSet.find((card) => card.cardName !== 'empty');
+                        }
+
+                        if(noEmpty === undefined){
+                        
+                        console.log("rumorID is"+rumorID);
+
+                        switch(rumorID){
+                            case 1:
+                                noEmpty = firstCardSet.find((card) => card.cardName !== 'empty');
+                                if(noEmpty === undefined){
+                                    console.log('全てがemptyだったら 2と3で交換')
+                                    let secondPlayersOne = secondCardSet.find((card) => card.cardName !== 'empty');
+                                    let thirdPlayersOne = thirdCardSet.find((card) => card.cardName !== 'empty');
+                                    if(secondPlayersOne === undefined || thirdPlayersOne === undefined){
+                                        console.log('either of undefined')
+                                        connection.query(
+                                            'SELECT * FROM ??',
+                                            [cardTableName],
+                                            (error,results) => {
+                                                socket.to(roomName).emit('rumorException',results,rumorPlayer)
+                                                socket.emit('rumorException',results,rumorPlayer);
+                                            }
+                                        )
+                                        
+                                    }else{
+                                    //2のカードに3のカードをセット
+                                    connection.query(
+                                        'UPDATE ?? SET cardName=? WHERE id=?',
+                                        [cardTableName,thirdPlayersOne.cardName,secondPlayersOne.id],
+                                        //3のカードに2のカードをセット
+                                        (error,results) => {
+                                            connection.query(
+                                                'UPDATE ?? SET cardName=? WHERE id=?',
+                                                [cardTableName,secondPlayersOne.cardName,thirdPlayersOne.id],
+                                                (error,results) => {
+                                                    connection.query(
+                                                        'SELECT * FROM ??',
+                                                        [cardTableName],
+                                                        (error,results) => {
+                                                            socket.to(roomName).emit('rumorException',results,rumorPlayer)
+                                                            socket.emit('rumorException',results,rumorPlayer);
+                                                        }
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    )
+                                    }
+                                }else{}
+                            break;
+                            case 2:
+                                noEmpty = secondCardSet.find((card) => card.cardName !== 'empty');
+                                if(noEmpty === undefined){
+                                    console.log('全てがemptyだったら 1と3で交換')
+                                    let firstPlayersOne = firstCardSet.find((card) => card.cardName !== 'empty');
+                                    let thirdPlayersOne = thirdCardSet.find((card) => card.cardName !== 'empty');
+
+                                    if(firstPlayersOne === undefined || thirdPlayersOne === undefined){
+                                        console.log('either of undefined')
+                                        connection.query(
+                                            'SELECT * FROM ??',
+                                            [cardTableName],
+                                            (error,results) => {
+                                                socket.to(roomName).emit('rumorException',results,rumorPlayer)
+                                                socket.emit('rumorException',results,rumorPlayer);
+                                            }
+                                        )
+                                    }else{
+                                    //1のカードに3のカードをセット
+                                    connection.query(
+                                        'UPDATE ?? SET cardName=? WHERE id=?',
+                                        [cardTableName,thirdPlayersOne.cardName,firstPlayersOne.id],
+                                        //3のカードに1のカードをセット
+                                        (error,results) => {
+                                            connection.query(
+                                                'UPDATE ?? SET cardName=? WHERE id=?',
+                                                [cardTableName,firstPlayersOne.cardName,thirdPlayersOne.id],
+                                                (error,results) => {
+                                                    connection.query(
+                                                        'SELECT * FROM ??',
+                                                        [cardTableName],
+                                                        (error,results) => {
+                                                            socket.to(roomName).emit('rumorException',results,rumorPlayer)
+                                                            socket.emit('rumorException',results,rumorPlayer);
+                                                        }
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    )
+                                    }
+                                    
+                                }else{}
+                            break;
+                            case 3:
+                               noEmpty = thirdCardSet.find((card) => card.cardName !== 'empty');
+                                if(noEmpty === undefined){
+                                    console.log('全てがemptyだったら 1と2で交換')
+                                    let firstPlayersOne = firstCardSet.find((card) => card.cardName !== 'empty');
+                                    let secondPlayersOne = secondCardSet.find((card) => card.cardName !== 'empty');
+                                    if(secondPlayersOne === undefined || firstPlayersOne === undefined){
+                                        console.log('either of undefined')
+                                        connection.query(
+                                            'SELECT * FROM ??',
+                                            [cardTableName],
+                                            (error,results) => {
+                                                socket.to(roomName).emit('rumorException',results,rumorPlayer)
+                                                socket.emit('rumorException',results,rumorPlayer);
+                                            }
+                                        )
+                                    }else{
+                                    //2のカードに1のカードをセット
+                                    connection.query(
+                                        'UPDATE ?? SET cardName=? WHERE id=?',
+                                        [cardTableName,firstPlayersOne.cardName,secondPlayersOne.id],
+                                        //1のカードに2のカードをセット
+                                        (error,results) => {
+                                            connection.query(
+                                                'UPDATE ?? SET cardName=? WHERE id=?',
+                                                [cardTableName,secondPlayersOne.cardName,firstPlayersOne.id],
+                                                (error,results) => {
+                                                    connection.query(
+                                                        'SELECT * FROM ??',
+                                                        [cardTableName],
+                                                        (error,results) => {
+                                                            socket.to(roomName).emit('rumorException',results,rumorPlayer)
+                                                            socket.emit('rumorException',results,rumorPlayer);
+                                                        }
+                                                    )
+                                                }
+                                            )
+                                        }
+                                    )
+                                    }
+                                }else{}
+                            break;
+                        }
+
+                        }else{
+
                         
                         const generateRandomNum = (cardSet) => {
                             let randomNum = Math.floor(Math.random()*cardSet.length);
@@ -439,6 +588,7 @@ io.on(('connect'),(socket)=>{
                                     )
                             }
                             )
+                        }
                 }
                 )
             }
@@ -1004,23 +1154,25 @@ io.on(('connect'),(socket)=>{
 
             const dropTables = async() => {
 
-                await connection.query(
-                    'DROP TABLE ??',
-                    [tableName],
-                    (error,results) => {}
-                )
+                // await connection.query(
+                //     'DROP TABLE ??',
+                //     [tableName],
+                //     (error,results) => {}
+                // )
 
-                await connection.query(
-                    'DROP TABLE ??',
-                    [msgTableName],
-                    (error,results) => {}
-                )
+                // await connection.query(
+                //     'DROP TABLE ??',
+                //     [msgTableName],
+                //     (error,results) => {}
+                // )
 
-                await connection.query(
-                    'DROP TABLE ??',
-                    [cardTableName],
-                    (error,results) => {}
-                )
+                // await connection.query(
+                //     'DROP TABLE ??',
+                //     [cardTableName],
+                //     (error,results) => {
+                //         console.log('dropped table')
+                //     }
+                // )
             }
             
         }else{}

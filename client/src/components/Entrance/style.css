@@ -1,0 +1,11 @@
+html{
+    color:rgba(139, 126, 152, 1.0);
+}
+
+.how-to-play:hover{
+    opacity: 0.6;
+}
+
+a{
+    text-decoration: none;
+}
