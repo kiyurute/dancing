@@ -29,6 +29,7 @@ app.use(router);
 
 const SetCards = require('./SetCards');
 const { table } = require('console');
+const { compileFunction } = require('vm');
 
 function createTable(tableName,userName,builder){
     console.log('in the createTable');
@@ -198,6 +199,8 @@ io.on(('connect'),(socket)=>{
                 'SELECT * FROM ??',
                 [tableName],
                 (error,results) => {
+
+                    if(results){
                     
                         results.map((val) => {
                             
@@ -207,6 +210,12 @@ io.on(('connect'),(socket)=>{
                             }
                             
                         })
+
+                        if(results.length >= 3){
+                            socket.emit('memberLimit');
+                        }else{
+
+                        
                         
                         if(nameDuplicate){
                             socket.to(roomName).emit('getReady',results);
@@ -225,9 +234,14 @@ io.on(('connect'),(socket)=>{
                                             socket.emit('getReady',results);
                                         })
                                 })
-                        }            
+                        }   
+                        
+                        }
                                     
+                }else{
+                    socket.emit('roomNoExist');
                 }
+            }
                 
         )}
         
@@ -1136,46 +1150,48 @@ io.on(('connect'),(socket)=>{
     })
     
     socket.on('disconnect',(event)=>{
-        console.log('user left');
-        console.log(gameRoomName);
-        let room = io.sockets.adapter.rooms[roomName];
+        console.log('user left from');
+        console.log(roomName);
+        let roomData = io.sockets.adapter.rooms[roomName];
+        console.log(roomData);
 
-        if(room === undefined){
+        if(roomData === undefined){
+            console.log("nobody is in room");
+            setTimeout(() => {checkRoomExist()},10000);
 
             const checkRoomExist = () => {
-                if(room === undefined){
+                if(io.sockets.adapter.rooms[roomName] === undefined){
                     dropTables();
                 }else{
 
                 }
             }
 
-            setTimeout(checkRoomExist,2000);
-
             const dropTables = async() => {
 
-                // await connection.query(
-                //     'DROP TABLE ??',
-                //     [tableName],
-                //     (error,results) => {}
-                // )
+                await connection.query(
+                    'DROP TABLE ??',
+                    [tableName],
+                    (error,results) => { console.log('member table dropped') }
+                )
 
-                // await connection.query(
-                //     'DROP TABLE ??',
-                //     [msgTableName],
-                //     (error,results) => {}
-                // )
+                await connection.query(
+                    'DROP TABLE ??',
+                    [msgTableName],
+                    (error,results) => {}
+                )
 
-                // await connection.query(
-                //     'DROP TABLE ??',
-                //     [cardTableName],
-                //     (error,results) => {
-                //         console.log('dropped table')
-                //     }
-                // )
+                await connection.query(
+                    'DROP TABLE ??',
+                    [cardTableName],
+                    (error,results) => {
+                        console.log('dropped table')
+                    }
+                )
             }
-            
-        }else{}
+
+
+        }
         
     })
 

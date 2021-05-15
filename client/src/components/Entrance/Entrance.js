@@ -84,7 +84,7 @@ const Entrance=(props)=>{
                     }
                     to={`/ready?userName=${userName}&roomName=${roomName}&builder=true`}
                   >
-                  <button className="btn btn-primary">部屋を作成</button>
+                  <button className="btn btn-primary">部屋を作成 | 3人モード</button>
                   </Link>
                 </div>
                 <div className="pt-3">
@@ -109,7 +109,7 @@ const Entrance=(props)=>{
           <div className="col-12 p-3">
               <div className="card p-3 shadow-sm">
                   <p>ゲームのはじめ方</p>
-                  <p>上の「名前」の欄に自分の名前を入力してください。新規に部屋を作成する場合は部屋名を入力してから「部屋を作成」ボタンを押してください。誰かの部屋に入る場合は部屋の作成者から部屋名を聞いて欄に入力し、「部屋に参加」ボタンを押してください。</p>
+                  <p>上の「名前」の欄に自分の名前を入力してください。新規に部屋を作成する場合は部屋名を入力してから「部屋を作成」ボタンを押してください。誰かの部屋に入る場合は部屋の作成者から部屋名を聞いて欄に入力し、「部屋に参加」ボタンを押してください。<br></br>※現在は3人モードのみです。</p>
               </div>
           </div>
       </div>

@@ -46,6 +46,16 @@ const Ready = ({location}) => {
             
             setMembers(temp);
         })
+
+        socket.on('memberLimit',() => {
+            alert('人数が上限です');
+            window.location.href = 'http://localhost:3000/entrance';
+        })
+
+        socket.on('roomNoExist',() => {
+            alert('部屋が存在しません');
+            window.location.href = 'http://localhost:3000/entrance';
+        })
         
         socket.on('loadGame',() => {
             console.log('loadGame');
@@ -115,6 +125,7 @@ const Ready = ({location}) => {
             <div className="row">
                     <div className="col-12 p-3">
                         <div className="card p-3 shadow-sm">
+                            <p>※注意：ゲームが開始したらブラウザのリロードをしないで下さい。</p>
                             <p>ルール等</p>
                             <p>自分の番になったら自分のカードの中から一枚選んで使ってください。勝つ方法は次の3通りです。<br></br>・「探偵」のカードを使って犯人を持っている人を当てる<br></br>・「犯人」のカードを最後の一枚で使う<br></br>・「たくらみ」を使って犯人と一緒に勝つ</p>
                         </div>

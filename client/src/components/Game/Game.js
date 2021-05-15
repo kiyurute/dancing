@@ -356,9 +356,13 @@ const Game = ({location}) => {
                     
                 }else{
                 playerChoices.push(
-                    <p key={i+1} style={{cursor:'pointer'}} onClick={() => {showCard(member.userName)}}>{member.userName}</p>
+                    <span key={i+1} style={{cursor:'pointer'}} onClick={() => {showCard(member.userName)}}>{member.userName}</span>
                     )
                 }
+
+            window.sessionStorage.setItem('turnState','hold');
+            setTurnState('hold')
+
             })
             console.log(playerChoices);
             setMessage(...message,playerChoices);
@@ -374,11 +378,11 @@ const Game = ({location}) => {
                         dealingCounter += 1;
                     }else if(card.cardName === 'dealing' && dealingCounter >= 1){
                         cardChoices.push(
-                        <p key={i+1} style={{cursor:'pointer'}} onClick={() => {sendDealing(memberName,card.cardName)}}>{translate(card.cardName)}</p>
+                        <span key={i+1} style={{cursor:'pointer'}} onClick={() => {sendDealing(memberName,card.cardName)}}>{translate(card.cardName)}</span>
                         )
                     }else{
                         cardChoices.push(
-                        <p key={i+1} style={{cursor:'pointer'}} onClick={() => {sendDealing(memberName,card.cardName)}}>{translate(card.cardName)}</p>
+                        <span key={i+1} style={{cursor:'pointer'}} onClick={() => {sendDealing(memberName,card.cardName)}}>{translate(card.cardName)}</span>
                         )
                     }
                 })
@@ -404,7 +408,7 @@ const Game = ({location}) => {
                         //not add
                     }else{
                         cardChoices.push(
-                        <p key={i+1} style={{cursor:'pointer'}} onClick={() => {sendOpponentCard(card.cardName)}}>{translate(card.cardName)}</p>
+                        <span key={i+1} style={{cursor:'pointer'}} onClick={() => {sendOpponentCard(card.cardName)}}>{translate(card.cardName)}</span>
                         )
                     }
                 })
@@ -462,6 +466,9 @@ const Game = ({location}) => {
         }
         
         socket.on('manipulationChoice',(cards,manipulationName) => {
+            window.sessionStorage.setItem('turnState','hold');
+            setTurnState('hold');
+
             membersArr.map((players) => {
                     if(players.userName === userName){
                      myCardsArr = cards.slice(players.id*4-4,players.id*4);
@@ -487,7 +494,7 @@ const Game = ({location}) => {
                     
                 }else{
                 manipulationMessage.push(
-                    <p key={i+1} style={{cursor:'pointer'}} onClick={() => {manipulationSelected(card.id)}}>{translate(card.cardName)}</p>
+                    <span key={i+1} style={{cursor:'pointer'}} onClick={() => {manipulationSelected(card.id)}}>{translate(card.cardName)}</span>
                     )
                 }
             })
@@ -576,6 +583,8 @@ const Game = ({location}) => {
         
         const dogFunc = (cardID) => {
             socket.emit('dog',cardID);
+            window.sessionStorage.setItem('turnState','hold');
+            setTurnState('hold');
         }
         
         socket.on('dogGetAllCards',(cards,cardID) => {
@@ -1011,10 +1020,16 @@ const Game = ({location}) => {
             setMessage([...message,detectiveMessage]);
         }
 
-        socket.on('detectiveSuccess',(detectivePlayerName,criminalID) => {
+        socket.on('detectiveSuccess',(detectivePlayerName,criminalID,cards) => {
             console.log('winner:'+detectivePlayerName);
+            console.log('criminalID is'+criminalID);
+            window.sessionStorage.setItem('turnState','gameFin');
+
+            let criminalMember = membersArr.find((member) => member.id === criminalID);
             setTurnState('gameFin');
+            setWinner(detectivePlayerName+'が探偵を使って勝利しました。犯人は'+criminalMember.userName+'でした。');
         })
+
 
         socket.on('detectiveMiss',(detectivePlayerName,selectedPlayerID,cards) => {
             console.log('detectiveMiss')
@@ -1125,7 +1140,7 @@ const Game = ({location}) => {
             console.log('winner:'+criminalPlayerName);
             window.sessionStorage.setItem('turnState','gameFin');
             setTurnState('gameFin');
-            setWinner(criminalPlayerName);
+            setWinner(criminalPlayerName+'が「犯人」を使って勝利しました。');
 
         })
 
@@ -1177,12 +1192,66 @@ const Game = ({location}) => {
 
                             <p>勝者</p>
                             <p>{winner}</p>
+                            <p>たくらみを使用した人:</p>
                             <p>{window.sessionStorage.getItem('planState1')}</p>
                             <p>{window.sessionStorage.getItem('planState2')}</p>
                         </div>
                     </div>
                 </div>
+
+
+            <div className="row">
+
+                    <div className="col-md-6 p-3">
+                        <div className="card shadow-sm">
+                            <div className="mycard-wrapper">
+                                <div className="cardscover">
+                                </div>
+                                <div className="mycards p-3">
+                                    <p>あなたのカード</p>
+                                    {myCards}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            
+                <div className="col-md-6 p-3">
+                    <div className="card p-3 shadow-sm">
+                        <p>みんなのカード</p>
+                        {memberData}
+                    </div>
+                </div>
+            
             </div>
+
+                <div className="row">
+                    <div className="col-12 p-3">
+                        <div className="card p-3 shadow-sm">
+                            <p>ルール等</p>
+                            <p>自分の番になったら自分のカードの中から一枚選んで使ってください。勝つ方法は次の3通りです。<br></br>・「探偵」のカードを使って犯人を持っている人を当てる<br></br>・「犯人」のカードを最後の一枚で使う<br></br>・「たくらみ」を使って犯人と一緒に勝つ</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="row">
+                        <div className="col-12 p-3">
+                            <div className="card p-3 shadow-sm">
+                                <p>カード一覧</p>
+                                <AllCards />
+                            </div>
+                        </div>
+                </div>
+
+                <div className="row pt-4 pb-4">
+                    <div className="col-2 mx-auto">
+                        <img src={FooterLogo} />
+                    </div>
+                </div>
+                
+                
+            
+            </div>
+
             </>
         )
 
@@ -1206,7 +1275,7 @@ const Game = ({location}) => {
                 <div className="col-12 p-3">
                     <div className="card p-3 shadow-sm">
                         <p>司会</p>
-                        <div className='row pt-2 overflow-scroll' style={{height:'160px'}}>
+                        <div className='row pt-2'>
                             {message.map((message) => {
 
                                 return (
@@ -1293,7 +1362,7 @@ const Game = ({location}) => {
                     <div className='col-12 p-3'>
                         <div className="card p-3 shadow-sm shadow-sm">
                             <p>司会</p>
-                            <div className='row pt-2 overflow-scroll' style={{height:'160px'}}>
+                            <div className='row pt-2'>
                             {message.map((message) => {
 
                                 return (
