@@ -1204,4 +1204,4 @@ let manipulationUserArr = [];
 let manipulationCardArr = [];
 let manipulationNewCardArr = [];
 
-server.listen(PORT,() => console.log('listening on 8081')); 
+server.listen(process.env.PORT || PORT,() => console.log('listening on 8081')); 
